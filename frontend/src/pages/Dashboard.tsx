@@ -76,7 +76,7 @@ export function Dashboard() {
     if (!importedCountry) {
       return (
         <p className="dashboard-section-message">
-          No data has been imported for this country.
+          This country/economy is outside the World Bank data catalog.
         </p>
       )
     }

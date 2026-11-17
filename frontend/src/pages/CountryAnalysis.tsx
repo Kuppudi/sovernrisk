@@ -9,6 +9,7 @@ import {
   Panel,
 } from '../components/UI'
 import { TrendChart } from '../components/TrendChart'
+import { isWorldBankIndicator } from '../services/api'
 
 export function CountryAnalysis({
   country,
@@ -22,6 +23,7 @@ export function CountryAnalysis({
   const indicators = useIndicators()
   const [indicator, setIndicator] = useState('NY.GDP.MKTP.KD.ZG')
   const data = useObservations(iso3, 'start_year=2015&end_year=2025')
+  const providerHistory = useObservations(isWorldBankIndicator(indicator) ? '' : iso3, `indicator=${encodeURIComponent(indicator)}&start_year=2015&end_year=2025`)
   const latest = new Map<
     string,
     NonNullable<typeof data.data>['items'][number]
@@ -70,8 +72,9 @@ export function CountryAnalysis({
               </select>
             </label>
             {indicators.error && <ErrorState error={indicators.error} />}
+            {providerHistory.error && <ErrorState error={providerHistory.error} />}
             <TrendChart
-              observations={(data.data?.items || []).filter(
+              observations={(isWorldBankIndicator(indicator) ? data.data?.items || [] : providerHistory.data?.items || []).filter(
                 (item) => item.indicator_code === indicator,
               )}
             />

@@ -32,7 +32,7 @@ export function CountryPreview({
   loading,
   detailsLink,
 }: CountryPreviewProps) {
-  const history = useObservations(country?.iso3 || '', `indicator=${indicator}`)
+  const history = useObservations(country?.iso3 || '', `indicator=${indicator}&start_year=2015&end_year=2025`)
   const label = getIndicatorLabel(indicator, metadata)
 
   return (

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useCountries, useIndicators } from '../hooks/useData'
-import { request } from '../services/api'
+import { isWorldBankIndicator, request } from '../services/api'
 import type { Comparison as ComparisonData } from '../types/api'
 import {
   Empty,
@@ -21,7 +21,7 @@ export function Comparison() {
     queryKey: ['compare', selected, indicator],
     enabled: selected.length >= 2,
     queryFn: () =>
-      request<ComparisonData>('/api/compare', {
+      request<ComparisonData>(isWorldBankIndicator(indicator) ? '/api/live/world-bank/compare' : '/api/compare', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ countries: selected, indicators: [indicator], start_year: 2015, end_year: 2025 }),

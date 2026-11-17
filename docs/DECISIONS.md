@@ -1,5 +1,26 @@
 # Architecture decisions
 
+## 2026-11-17 · API frontend and country report RAG
+
+The user chose API-backed World Bank frontend data with short server caching,
+retaining versioned structured snapshots for model training. Reuse official WDI
+CSV download parsing because the JSON observations endpoint timed out during
+verification. Cache ten validated indicator responses in worker memory for five
+minutes. Preserve missing values, revision dates and content hashes.
+
+The user requested current country debt PDFs and chose Azure OpenAI for generated
+explanations. Persist official report metadata and page-preserving chunks in
+PostgreSQL, archive original PDFs by hash, and retrieve with country-scoped BM25.
+The first implementation searches World Bank publications and joint DSAs that
+appear in its catalog. Store document dates separately from indexing dates.
+Generated answers use retrieved evidence and explicit model availability. Model
+prediction drivers require validated feature attributions.
+
+Keep Azure generation settings server-side and make cited passage search usable
+before credentials are configured. Scanned PDFs report that OCR is required.
+Report refreshes commit new chunks atomically and preserve an existing index on
+failure. No Azure resources are provisioned by the implementation.
+
 ## 2026-11-10 · World Bank data engineering notebook
 
 After approving a section-by-section plan, the user authorized a World Bank-only `notebooks/data_extract.ipynb` for learning data engineering before ML and RAG. Keep readable Python/pandas logic visible in cells and reuse the existing official connector, validators, hashing, and transactional storage. Notebook extras are development dependencies, not App Service dependencies; backend CI installs them to exercise the notebook tests.

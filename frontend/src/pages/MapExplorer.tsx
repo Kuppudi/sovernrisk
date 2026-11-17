@@ -6,13 +6,13 @@ import { WorldMap } from '../components/WorldMap'
 import { ErrorState, Loading } from '../components/UI'
 import {
   useCountries,
-  useWorldBankCoverage,
   useIndicators,
   useMapData,
   useWorldShapes,
 } from '../hooks/useData'
 import { getIndicatorLabel } from '../services/indicatorLabels'
 import { getAvailableYears, getCountryChoices } from '../services/mapData'
+import { isWorldBankIndicator } from '../services/api'
 
 const defaultIndicator = 'NY.GDP.MKTP.KD.ZG'
 
@@ -26,7 +26,6 @@ export function MapExplorer({
   const { search } = useLocation()
   const countries = useCountries()
   const indicators = useIndicators()
-  const coverage = useWorldBankCoverage()
   const shapes = useWorldShapes()
   const [chosenIndicator, setChosenIndicator] = useState<string | null>(null)
   const [chosenYear, setChosenYear] = useState<number | null>(null)
@@ -55,16 +54,14 @@ export function MapExplorer({
 
   return (
     <>
-      {coverage.data && (
+      {countries.data && (
         <div className="dataset-summary" aria-label="World Bank data coverage">
-          <strong>World Bank · {coverage.data.start_year}–{coverage.data.end_year}</strong>
-          <span>{coverage.data.country_count} countries/economies</span>
-          <span>{coverage.data.indicator_count} indicators</span>
-          <span>{coverage.data.reported_count.toLocaleString()} reported values</span>
-          <span>{coverage.data.missing_count.toLocaleString()} missing values</span>
+          <strong>World Bank API · 2015–2025</strong>
+          <span>{countries.data.total} countries/economies</span>
+          <span>{definitions.filter((item) => isWorldBankIndicator(item.code)).length} World Bank indicators</span>
+          <span>11 annual observations per indicator</span>
         </div>
       )}
-      {coverage.error && <ErrorState error={coverage.error} />}
       <div className="dashboard-filters">
         <label className="map-field">
           Indicator

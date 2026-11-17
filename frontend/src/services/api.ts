@@ -1,3 +1,7 @@
+export function isWorldBankIndicator(code = ''): boolean {
+  return !code.startsWith('IMF.') && !code.startsWith('ADB.')
+}
+
 export async function request<T>(
   path: string,
   options?: RequestInit,

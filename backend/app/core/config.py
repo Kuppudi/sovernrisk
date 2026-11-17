@@ -2,6 +2,7 @@ from functools import lru_cache
 from pathlib import Path
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic import SecretStr
 
 
 class Settings(BaseSettings):
@@ -13,6 +14,10 @@ class Settings(BaseSettings):
     cors_origins: list[str] = ["http://localhost:5173", "http://127.0.0.1:5173"]
     world_bank_base_url: str = "https://api.worldbank.org/v2"
     raw_data_dir: Path = Path("data/raw")
+    report_data_dir: Path = Path("data/reports")
+    azure_openai_endpoint: str = ""
+    azure_openai_deployment: str = ""
+    azure_openai_api_key: SecretStr = SecretStr("")
     frontend_dir: Path = Path(__file__).resolve().parents[3] / "frontend" / "dist"
 
 

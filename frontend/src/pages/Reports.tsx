@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { request } from '../services/api'
+import { DebtReports } from '../components/DebtReports'
 import type { Report } from '../types/api'
 import {
   ErrorState,
@@ -16,10 +17,11 @@ export function Reports({ country }: { country: string }) {
   const report = useQuery({
     queryKey: ['report', country],
     queryFn: () =>
-      request<Report>(`/api/countries/${encodeURIComponent(country)}/report`),
+      request<Report>(`/api/live/world-bank/countries/${encodeURIComponent(country)}/report`),
   })
   return (
     <>
+      <DebtReports key={country} country={country} />
       {report.isPending ? (
         <Loading />
       ) : report.error ? (
@@ -45,7 +47,7 @@ export function Reports({ country }: { country: string }) {
           </div>
           <Panel
             title="Executive summary"
-            subtitle="Generated from database values; no language model"
+            subtitle="Summary of World Bank API observations"
           >
             <p className="report-summary">{report.data.executive_summary}</p>
           </Panel>

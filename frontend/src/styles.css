@@ -653,6 +653,7 @@ details summary {
   color: #748998;
 }
 .field input,
+.field textarea,
 .field select {
   border: 1px solid #dce5ec;
   border-radius: 5px;
@@ -663,6 +664,17 @@ details summary {
   min-width: 0;
   max-width: 100%;
 }
+.report-research { padding: 0 22px 22px; }
+.debt-report-list { margin: 18px 0; }
+.debt-report { border-bottom: 1px solid #e1e8ee; padding: 16px 0; }
+.debt-report > a { font-size: 14px; font-weight: 600; }
+.debt-report p, .report-citation p { font-size: 12px; line-height: 1.7; margin: 10px 0; }
+.report-actions { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-top: 14px; }
+.report-actions label { font-size: 12px; }
+.report-citation { border-top: 1px solid #e1e8ee; padding: 15px 0; }
+.report-citation summary { cursor: pointer; font-size: 12px; line-height: 1.7; }
+.report-citation a { font-size: 12px; }
+.rag-answer { white-space: pre-wrap; font-size: 14px; line-height: 1.8; margin: 20px 0; }
 .year-field {
   min-width: 75px;
   max-width: 100px;

@@ -20,4 +20,7 @@ __all__ = [
     "Observation",
     "Prediction",
     "RatingEvent",
+    "DebtReport",
+    "DebtReportChunk",
 ]
+from backend.app.models.debt_reports import DebtReport, DebtReportChunk

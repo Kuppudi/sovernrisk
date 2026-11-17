@@ -28,12 +28,17 @@ values and the World Bank source revision for each indicator.
 Use `--wdi-downloads DIRECTORY` to reuse saved World Bank per-indicator CSV
 archives named `INDICATOR_CODE.zip`.
 
-The dashboard shows separate country, indicator, reported-value, and missing-value
-counts for 2015–2025. The data explorer defaults to all indicators, supports
-paginated tables, and exports the complete filtered country dataset. The map
-shows one selected indicator/year, with country trends and comparisons below it.
-Earlier imported history remains queryable. Source gaps, including unavailable
-2025 values, remain explicitly missing.
+The World Bank frontend now reads the official download API through App Service,
+with a five-minute memory cache and no observation writes. The data explorer
+defaults to all ten World Bank indicators, supports paginated tables, and exports
+the complete filtered country dataset. The map shows one selected indicator/year,
+with country trends and comparisons below it. Versioned imports remain available
+for ML training and earlier history through the stored-data API. Source gaps,
+including unavailable 2025 values, remain explicitly missing.
+
+See [the RAG architecture](RAG_ARCHITECTURE.md) for country PDF discovery,
+processing, page-cited retrieval, Azure OpenAI configuration and the additive
+database migration required for report research.
 
 ## IMF fiscal indicators
 

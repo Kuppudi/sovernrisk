@@ -6,14 +6,13 @@ export const formatNumber = (value: number | null, digits = 2) =>
   value === null
     ? 'Not reported'
     : value.toLocaleString(undefined, { maximumFractionDigits: digits })
-export const formatDate = (value: string | null | undefined) =>
-  value
-    ? new Date(value).toLocaleDateString(undefined, {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-      })
-    : 'Not refreshed'
+export const formatDate = (value: string | null | undefined) => {
+  if (!value) return 'Not refreshed'
+  const timestamp = value.length === 10 ? `${value}T00:00:00` : value
+  return new Date(timestamp).toLocaleDateString(undefined, {
+    year: 'numeric', month: 'short', day: 'numeric',
+  })
+}
 
 export function Icon({
   name = 'grid',

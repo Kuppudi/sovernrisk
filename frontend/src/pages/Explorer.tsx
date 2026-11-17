@@ -9,6 +9,7 @@ import {
   SectionHeading,
 } from '../components/UI'
 import { TrendChart } from '../components/TrendChart'
+import { isWorldBankIndicator } from '../services/api'
 
 export function Explorer({
   country,
@@ -26,8 +27,8 @@ export function Explorer({
   const valid =
     Number.isInteger(start) &&
     Number.isInteger(end) &&
-    start >= 1960 &&
-    end <= 2100 &&
+    start >= 2015 &&
+    end <= 2025 &&
     start <= end
   const params = new URLSearchParams({
     start_year: String(start),
@@ -52,7 +53,7 @@ export function Explorer({
               value={indicator}
               onChange={(e) => { setIndicator(e.target.value); setPage(0) }}
             >
-              <option value="">All indicators</option>
+              <option value="">All World Bank indicators</option>
               {indicators.data?.map((item) => (
                 <option key={item.code} value={item.code}>
                   {item.name}
@@ -64,8 +65,8 @@ export function Explorer({
             From
             <input
               type="number"
-              min="1960"
-              max="2100"
+              min="2015"
+              max="2025"
               value={start}
               onChange={(e) => { setStart(Number(e.target.value)); setPage(0) }}
             />
@@ -74,8 +75,8 @@ export function Explorer({
             Through
             <input
               type="number"
-              min="1960"
-              max="2100"
+              min="2015"
+              max="2025"
               value={end}
               onChange={(e) => { setEnd(Number(e.target.value)); setPage(0) }}
             />
@@ -83,7 +84,7 @@ export function Explorer({
           {valid && (
             <a
               className="button secondary"
-              href={`/api/countries/${country}/indicators.csv?${params}`}
+              href={`${isWorldBankIndicator(indicator) ? '/api/live/world-bank' : '/api'}/countries/${country}/indicators.csv?${params}`}
               download
             >
               <Icon name="download" />
@@ -94,7 +95,7 @@ export function Explorer({
       )}
       {!valid && (
         <div className="notice" role="alert">
-          Choose an ordered year range between 1960 and 2100.
+          Choose an ordered year range between 2015 and 2025.
         </div>
       )}
       {!valid ? null : data.isPending ? (

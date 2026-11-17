@@ -1,5 +1,39 @@
 # Project state · 2026-11-17
 
+## Latest feature · API frontend and debt report research
+
+The user selected World Bank API reads for the frontend and Azure OpenAI for
+report explanations. World Bank country catalogs, maps, histories, comparisons,
+CSV exports and deterministic summaries now use official WDI download responses
+cached in worker memory for five minutes. These frontend reads do not write
+observations to disk or PostgreSQL. Saved snapshots continue to support ML.
+The API path was verified live for 217 economies, ten indicators, eleven India
+GDP years and the 2025 global GDP-growth map, which returned 186 numeric values.
+
+Country report research can discover recent matching English World Bank PDFs,
+process selected PDFs into country-scoped chunks, search with BM25 and open
+original PDF pages. Azure OpenAI generation is implemented with server-side
+configuration and validated citation identifiers. The existing research model
+does not supply a validated live score. Generated explanations receive explicit
+model availability and stored observation context.
+
+Local verification processed the November 10, 2026 Kenya Economic Update into
+68 pages and 228 chunks, and the browser retrieved cited debt/refinancing
+passages. The report index is preserved when a refresh fails. Embedded PDF font
+decoding, missing text/OCR errors, source host validation, retries, duplicate
+processing and cross-country retrieval isolation are covered.
+
+The expanded test suite passes with 93 tests and one skip on SQLite and
+PostgreSQL, and the TypeScript/Vite build passes. The additive report migration
+was applied and Alembic reported no schema drift locally. Azure OpenAI has not
+been called live because local endpoint, deployment and credentials are unset.
+Azure report research requires the migration and server settings described in
+`RAG_ARCHITECTURE.md`.
+
+The newer Azure-generated workflow was retained and corrected to build React
+and deploy the existing allowlisted application ZIP. Its automatic main-branch
+deployment remains separate from local runtime verification.
+
 ## Latest feature · Global World Bank dashboard data
 
 The local database now includes a fresh official 2015–2025 import for 217

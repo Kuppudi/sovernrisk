@@ -1,6 +1,6 @@
 import type { FeatureCollection, Geometry } from 'geojson'
 import type { Country, MapData } from '../types/api'
-import { request } from './api'
+import { isWorldBankIndicator, request } from './api'
 
 export interface MapPlace {
   iso3: string
@@ -20,28 +20,35 @@ export const missingDataColor = '#e4e9ed'
 export async function loadWorldShapes(): Promise<WorldShapes> {
   const response = await fetch('/maps/world-countries.json')
   if (!response.ok) throw new Error('The world map could not be loaded.')
-  return response.json()
+  const shapes: WorldShapes = await response.json()
+  const aliases: Record<string, string> = {
+    ZAR: 'COD', TMP: 'TLS', WBG: 'PSE', ROM: 'ROU', KSV: 'XKX',
+  }
+  for (const feature of shapes.features) {
+    feature.properties.iso3 = aliases[feature.properties.iso3] || feature.properties.iso3
+  }
+  return shapes
 }
 
 export function loadMapData(indicator: string, year: number): Promise<MapData> {
   const filters = new URLSearchParams({ indicator, year: String(year) })
-  return request<MapData>(`/api/data/map?${filters}`)
+  const path = isWorldBankIndicator(indicator) ? '/api/live/world-bank/map' : '/api/data/map'
+  return request<MapData>(`${path}?${filters}`)
 }
 
 export function getCountryChoices(
   shapes: WorldShapes | undefined,
   countries: Country[],
 ): MapPlace[] {
+  if (countries.length) {
+    return countries.map((country) => ({ iso3: country.iso3, name: country.name }))
+      .sort((first, second) => first.name.localeCompare(second.name))
+  }
   const places = new Map<string, MapPlace>()
 
   for (const feature of shapes?.features || []) {
     places.set(feature.properties.iso3, feature.properties)
   }
-  // Imported countries stay selectable even when too small for the map outline.
-  for (const country of countries) {
-    places.set(country.iso3, { iso3: country.iso3, name: country.name })
-  }
-
   return Array.from(places.values()).sort((first, second) =>
     first.name.localeCompare(second.name),
   )
