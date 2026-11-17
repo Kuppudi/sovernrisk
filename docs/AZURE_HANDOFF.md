@@ -70,12 +70,11 @@ flowchart LR
   experiment exists, with research artifacts and historical test predictions.
 - The ML starter delivery includes `ml/default_training.py`,
   `notebooks/default_training.ipynb`, tests and optional ML dependencies.
-  Check out `feature/ml-starter-copilot-handoff` to obtain this delivery before
-  it is merged. Raw datasets, the label workbook and generated research models
+  Raw datasets, the label workbook and generated research models
   remain outside Git and must be supplied separately.
-- `.github/workflows/main_sovernriskai.yml` currently deploys automatically on a
-  main push. `.github/workflows/app-service.yml` has a separate manual deployment
-  path. Review these workflows before publishing any later changes.
+- Both `.github/workflows/main_sovernriskai.yml` and
+  `.github/workflows/app-service.yml` require a manual dispatch from main for
+  deployment. Ordinary source pushes perform CI/package checks only.
 
 ## Prompt to paste into the Windows VS Code coding agent
 
@@ -99,11 +98,11 @@ Publishing, merging into a deployment branch, creating Azure services, starting
 billable compute and changing service tiers/throughput require a later explicit
 instruction. Azure discovery commands below are read-only.
 
-First inspect `.github/workflows/main_sovernriskai.yml` and
-`.github/workflows/app-service.yml`. Prepare a manual-only deployment arrangement
-in the feature branch so future ordinary source pushes do not release the app.
-Retain CI build/test/package checks. Present that workflow change with the other
-code changes before any push or merge.
+Inspect `.github/workflows/main_sovernriskai.yml` and
+`.github/workflows/app-service.yml`. Preserve their manual-only deployment
+controls and CI build/test/package checks. Ordinary source pushes must not
+release the app. Merge only when requested; Azure publishing needs a separate
+explicit instruction.
 
 ### 1. Discover the existing resources
 
@@ -229,7 +228,7 @@ history and existing data during the transition.
 ### 6. Prepare the ML phase
 
 Check whether the training module/notebook is present in this Windows checkout.
-If it is missing, obtain the ML starter delivery branch before starting this
+If it is missing, obtain the latest main source before starting this
 phase. The storage work can proceed independently. Supply the input snapshot and
 official label workbook separately; source checkout does not include them.
 
@@ -307,7 +306,6 @@ For an existing checkout, preserve its current work and open that folder.
 git clone git@github.com:Kuppudi/sovernrisk.git
 Set-Location .\sovernrisk
 git status --short
-git switch --track origin/feature/ml-starter-copilot-handoff
 git switch -c feature/azure-blob-cosmos-storage
 git ls-files ml/default_training.py notebooks/default_training.ipynb
 code .

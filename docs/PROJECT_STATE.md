@@ -3,11 +3,11 @@
 ## Current handoff · ML starter and Azure storage direction
 
 The user requested source delivery for Windows VS Code/Copilot and explicitly
-stopped Azure publishing. Deliver this work on
-`feature/ml-starter-copilot-handoff`; do not merge main or deploy. The existing
-main-branch Azure workflow still publishes automatically and needs manual
-deployment control before a future main merge. Earlier deployment occurred
-before the user changed this instruction.
+stopped Azure publishing, then authorized merging the ML starter into main.
+Both deployment workflows now require an explicit manual dispatch from main.
+Source pushes run checks/packaging without Azure publishing. Earlier deployment
+occurred before the user changed this instruction. No deployment is part of
+the ML starter delivery or main merge.
 
 The user has App Service, Blob Storage and Cosmos DB. Blob/Cosmos are the target
 for durable data, reports and models. Current SQLAlchemy/PostgreSQL paths are

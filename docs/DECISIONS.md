@@ -9,10 +9,11 @@ been implemented. Use native Windows Python/Node, Azure CLI and GitHub SSH.
 Docker is outside this implementation. Azure resource changes and deployment
 are deferred to a later explicit instruction.
 
-Push the ML starter, its tests, the Azure handoff and Copilot instructions on
-a feature branch. The user explicitly stopped Azure publishing. Earlier main
-merge authorization does not authorize deployment now. The current automatic
-main workflow must be addressed before a later main merge.
+The user authorized pushing the ML starter, its tests, the Azure handoff and
+Copilot instructions, then explicitly requested the main merge. Azure publishing
+remains stopped. Remove the generated workflow's main-push deployment trigger
+and guard its deploy job to manual dispatch from main, matching the existing
+App Service workflow. Source delivery and main merges must not deploy Azure.
 
 The initial ML target is country-level conventional sovereign default onset,
 conditioned on explicit prior-year zero default stocks in the BoC–BoE workbook.

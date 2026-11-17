@@ -5,9 +5,7 @@
 name: Build and deploy Python app to Azure Web App - sovernriskAI
 
 on:
-  push:
-    branches:
-      - 'main'
+  # Source pushes are verified by the App Service workflow, without deployment.
   workflow_dispatch:
 
 jobs:
@@ -46,6 +44,7 @@ jobs:
           path: dist/app-service.zip
 
   deploy:
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     needs: build
 

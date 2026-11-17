@@ -93,10 +93,10 @@ PostgreSQL, Docker, dashboard-tab and automatic-merge instructions.
   Run Python modules from the repository root. Align API schemas and frontend
   contracts. Preserve dates, provider revisions, source URLs, hashes and nulls.
 - Create a feature branch, verify locally, push that branch and inspect CI.
-  The latest user instruction prohibits Azure publishing. Do not merge into
-  main or run deployment workflows as part of source delivery.
-  `.github/workflows/main_sovernriskai.yml` currently deploys on main pushes.
-  Prepare manual-only deployment control before any future main merge.
+  Merge main only when the user requests it. A main merge does not authorize
+  Azure publishing. Both App Service deployment workflows require an explicit
+  manual dispatch from main. Keep push/PR workflows limited to checks and
+  packaging. Never dispatch deployment as part of source delivery.
 - Do not provision/scale Azure resources or start cloud ML jobs without an
   explicit instruction. Source delivery does not authorize those actions.
   Keep ML dependencies and artifacts outside the App Service package.
