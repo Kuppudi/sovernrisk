@@ -52,7 +52,7 @@ export function TrendChart({
     <div
       className="chart"
       role="img"
-      aria-label={`Historical trend for ${observations[0].indicator_name}. Data also available in tables and CSV.`}
+      aria-label={`Historical trend for ${observations[0].indicator_name}.`}
     >
       <ResponsiveContainer width="100%" height={height}>
         <LineChart
@@ -71,8 +71,19 @@ export function TrendChart({
             fontSize={11}
             tickMargin={12}
           />
-          <YAxis tickLine={false} axisLine={false} fontSize={11} width={56} />
+          <YAxis
+            tickLine={false}
+            axisLine={false}
+            fontSize={11}
+            width={56}
+            tickFormatter={(value: number) => value.toLocaleString(undefined, {
+              notation: 'compact', maximumFractionDigits: 1,
+            })}
+          />
           <Tooltip
+            formatter={(value) => typeof value === 'number'
+              ? value.toLocaleString(undefined, { maximumFractionDigits: 2 })
+              : String(value ?? '')}
             contentStyle={{
               borderRadius: 10,
               border: '1px solid #e3e9ee',

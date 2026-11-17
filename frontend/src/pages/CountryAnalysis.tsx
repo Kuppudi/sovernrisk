@@ -4,6 +4,7 @@ import { getIndicatorLabel } from '../services/indicatorLabels'
 import { TrendChart } from '../components/TrendChart'
 
 export function CountryAnalysis({ iso3 }: { iso3: string }) {
+  const [indicator, setIndicator] = useState('NY.GDP.MKTP.KD.ZG')
   const indicators = useIndicators()
   const data = useObservations(iso3, 'start_year=2015&end_year=2025')
   const latest = new Map<string, NonNullable<typeof data.data>['items'][number]>()
@@ -44,10 +45,22 @@ export function CountryAnalysis({ iso3 }: { iso3: string }) {
         })}
       </div>
       <div className="fundamentals-history">
-        <h3>GDP growth · 2015–2025</h3>
+        <div className="history-heading">
+          <label>
+            History
+            <select aria-label="History indicator" value={indicator} onChange={(event) => setIndicator(event.target.value)}>
+              {(indicators.data || []).map((definition) => (
+                <option key={definition.code} value={definition.code}>
+                  {getIndicatorLabel(definition.code, definition).name}
+                </option>
+              ))}
+            </select>
+          </label>
+          <span>2015–2025 · {indicators.data?.find((item) => item.code === indicator)?.unit}</span>
+        </div>
         <TrendChart
           observations={(data.data?.items || []).filter(
-            (observation) => observation.indicator_code === 'NY.GDP.MKTP.KD.ZG',
+            (observation) => observation.indicator_code === indicator,
           )}
           height={190}
         />
@@ -55,3 +68,4 @@ export function CountryAnalysis({ iso3 }: { iso3: string }) {
     </>
   )
 }
+import { useState } from 'react'

@@ -5,9 +5,13 @@
 The latest user-facing layout shows country fundamentals directly below the
 map. Country comparison, report research and data explorer sections are absent
 from the dashboard. AI / RAG appears as a separate Coming soon card beside the
-map. Countries are selected directly on the map. The map defaults to 2025 GDP growth,
-and fundamentals show ten compact latest-value indicators plus a 2015–2025 GDP
-growth history graph.
+map. Countries are selected directly on the zoomable, draggable map. The
+right-hand assessment card toggles the map between default risk and 2025 GDP
+growth. Default risk is the initial mode and remains explicitly unavailable
+pending model validation. The map has no visible metric heading. Fundamentals
+show ten compact latest-value indicators and a 2015–2025 history graph with a
+ten-indicator dropdown. Wheel zoom, zoom buttons, panning, zoom reset, country
+selection, mode switching and history selection were verified in the browser.
 The duplicate country-indicator preview, coverage banner, extra top filters and
 raw observation table were removed. Legacy comparison/report/explorer URLs return
 to the dashboard. Report

@@ -113,7 +113,7 @@ class ModelStatus(BaseModel):
     risk_model: str = "Model Not Trained"
     downgrade_model: str = "Model Not Trained"
     predictions_available: int = 0
-    reason: str = "No validated supervised artifacts or licensed historical rating targets are configured."
+    reason: str = "Validated default-risk and downgrade predictions are not configured."
 
 
 class Freshness(BaseModel):

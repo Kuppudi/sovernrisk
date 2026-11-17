@@ -7,6 +7,11 @@ inline, and present AI / RAG as a Coming soon card. Comparison, country reports
 and data explorer controls do not appear in the user interface. Keep the PDF
 and retrieval services as groundwork for the later AI card.
 
+The later map refinement adds a right-hand default-risk/GDP-growth toggle,
+native SVG zoom and panning, map-based country selection, and a key-indicator
+dropdown on the compact history chart. Default risk starts with unavailable
+values until a validated model supplies scores. A metric switch preserves zoom.
+
 The user chose API-backed World Bank frontend data with short server caching,
 retaining versioned structured snapshots for model training. Reuse official WDI
 CSV download parsing because the JSON observations endpoint timed out during
