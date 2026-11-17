@@ -24,7 +24,7 @@ export function Comparison() {
       request<ComparisonData>('/api/compare', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ countries: selected, indicators: [indicator] }),
+        body: JSON.stringify({ countries: selected, indicators: [indicator], start_year: 2015, end_year: 2025 }),
       }),
   })
   if (countries.error || indicators.error) {

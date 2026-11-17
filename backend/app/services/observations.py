@@ -78,6 +78,10 @@ def observation_query(
     )
     if dataset_version:
         ranked = ranked.where(Observation.dataset_version == dataset_version)
+    if codes:
+        ranked = ranked.where(
+            Observation.indicator_id.in_(select(Indicator.id).where(Indicator.code.in_(codes)))
+        )
     latest = ranked.subquery()
     query = (
         select(Observation, Indicator, DataSource)

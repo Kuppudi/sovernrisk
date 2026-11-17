@@ -72,14 +72,19 @@ class WorldBankClient:
             page += 1
         return records, metadata
 
-    async def _request(self, path: str, params: dict) -> Any:
+    async def fetch_csv_archive(self, indicator: str) -> bytes:
+        return await self._request(
+            f"en/indicator/{indicator}", {"downloadformat": "csv"}, binary=True
+        )
+
+    async def _request(self, path: str, params: dict, *, binary: bool = False) -> Any:
         for attempt in range(self.retries + 1):
             try:
                 response = await self.client.get(
                     f"{self.base_url}/{path.lstrip('/')}", params=params, timeout=30
                 )
                 response.raise_for_status()
-                return response.json()
+                return response.content if binary else response.json()
             except httpx.HTTPStatusError as exc:
                 if exc.response.status_code != 429 and exc.response.status_code < 500:
                     raise SourceError(

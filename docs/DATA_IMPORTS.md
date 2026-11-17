@@ -12,6 +12,29 @@ python -m ingestion.cli --countries USA IND BRA DEU JPN ZAF --start-year 2015 --
 
 This command remains unchanged. `--source world-bank` is optional.
 
+For the global WDI panel, omit `--countries` and pass `--all-countries`:
+
+```sh
+python -m ingestion.cli --all-countries --start-year 2015 --end-year 2025
+```
+
+The global import covers all country/economy entries, excludes regional aggregates,
+and includes ten indicators. Total GDP (`NY.GDP.MKTP.CD`, current US$) joins
+GDP growth, GDP per person, inflation, exports, imports, current account balance,
+reserves (months of
+imports), external debt (% of GNI), and debt service (% of exports of
+goods, services, and primary income). The snapshot retains explicit missing
+values and the World Bank source revision for each indicator.
+Use `--wdi-downloads DIRECTORY` to reuse saved World Bank per-indicator CSV
+archives named `INDICATOR_CODE.zip`.
+
+The dashboard shows separate country, indicator, reported-value, and missing-value
+counts for 2015–2025. The data explorer defaults to all indicators, supports
+paginated tables, and exports the complete filtered country dataset. The map
+shows one selected indicator/year, with country trends and comparisons below it.
+Earlier imported history remains queryable. Source gaps, including unavailable
+2025 values, remain explicitly missing.
+
 ## IMF fiscal indicators
 
 ```sh

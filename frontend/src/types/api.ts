@@ -46,6 +46,16 @@ export interface Freshness {
   failed_runs: number
   frequency: string
 }
+export interface DataCoverage {
+  source: string
+  start_year: number
+  end_year: number
+  country_count: number
+  indicator_count: number
+  observation_count: number
+  reported_count: number
+  missing_count: number
+}
 export interface ModelStatus {
   status: 'unavailable'
   risk_model: string

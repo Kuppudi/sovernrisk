@@ -125,6 +125,17 @@ class Freshness(BaseModel):
     frequency: str = "Annual observations; refresh time is not the observation year or publication date."
 
 
+class DataCoverage(BaseModel):
+    source: str
+    start_year: int
+    end_year: int
+    country_count: int
+    indicator_count: int
+    observation_count: int
+    reported_count: int
+    missing_count: int
+
+
 class ReportOut(BaseModel):
     country: CountryOut
     generated_at: datetime

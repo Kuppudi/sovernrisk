@@ -1,4 +1,22 @@
-# Project state · 2026-11-10
+# Project state · 2026-11-17
+
+## Latest feature · Global World Bank dashboard data
+
+The local database now includes a fresh official 2015–2025 import for 217
+countries/economies and ten WDI indicators, including total GDP and the existing
+economic/debt series. The import contains 23,870 annual records, 19,020 reported
+values and 4,850 explicit missing values. Dataset
+`2708a9cc085b6d207266e631fd8f95f9d80e5053b918e5042ec86f9bf9c18074`.
+
+The dashboard distinguishes country coverage from observation counts. Country
+lists follow pagination, the explorer offers all indicators and paginated tables,
+and country history/comparison defaults to 2015–2025. Total GDP is added to the
+display catalog without changing the nine-feature research model schema.
+
+Verification passed with 85 tests and one skip on both SQLite and isolated local
+PostgreSQL schemas, plus the TypeScript/Vite production build. Live local API
+checks verified the coverage totals and all eleven India GDP observations.
+Azure deployment and import remain user-controlled and have not been performed.
 
 Delivery uses separate feature branches, each pushed and checked before merging to `main`. The user reports the existing app is running in Azure after manual Quick Deploy, private PostgreSQL configuration, and a 396-row World Bank import. The agent has not independently verified that Azure deployment or provisioned cloud resources.
 

@@ -115,6 +115,7 @@ export function Dashboard() {
         <DashboardSection id="data" title="Data explorer">
           {countryContent(
             <Explorer
+              key={country}
               country={country}
               countryName={importedCountry?.name || country}
             />,

@@ -3,6 +3,7 @@ import { request } from '../services/api'
 import { loadMapData, loadWorldShapes } from '../services/mapData'
 import type {
   CountryPage,
+  DataCoverage,
   Freshness,
   Indicator,
   ModelStatus,
@@ -12,7 +13,21 @@ import type {
 export const useCountries = () =>
   useQuery({
     queryKey: ['countries'],
-    queryFn: () => request<CountryPage>('/api/countries?limit=250'),
+    queryFn: async () => {
+      const first = await request<CountryPage>('/api/countries?limit=250')
+      const items = [...first.items]
+      while (items.length < first.total) {
+        const page = await request<CountryPage>(`/api/countries?limit=250&offset=${items.length}`)
+        if (!page.items.length) throw new Error('The country list changed. Refresh to load it again.')
+        items.push(...page.items)
+      }
+      return { ...first, items }
+    },
+  })
+export const useWorldBankCoverage = () =>
+  useQuery({
+    queryKey: ['world-bank-coverage', 2015, 2025],
+    queryFn: () => request<DataCoverage>('/api/data/world-bank/coverage?start_year=2015&end_year=2025'),
   })
 export const useIndicators = () =>
   useQuery({
@@ -30,12 +45,14 @@ export const useModels = () =>
     queryFn: () => request<ModelStatus>('/api/models/status'),
   })
 export function useObservations(iso3: string, params = '') {
+  const filters = new URLSearchParams(params)
+  if (!filters.has('limit')) filters.set('limit', '5000')
   return useQuery({
     queryKey: ['observations', iso3, params],
     enabled: Boolean(iso3),
     queryFn: () =>
       request<ObservationPage>(
-        `/api/countries/${encodeURIComponent(iso3)}/indicators?limit=5000&${params}`,
+        `/api/countries/${encodeURIComponent(iso3)}/indicators?${filters}`,
       ),
   })
 }

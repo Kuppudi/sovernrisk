@@ -3,6 +3,7 @@
 import argparse
 import asyncio
 from datetime import date
+from pathlib import Path
 
 import httpx
 from sqlalchemy.orm import Session
@@ -33,13 +34,15 @@ async def run(args) -> None:
             else:
                 connector = AdbClient(client)
                 import_data = ingest_source
+            options = {"downloads": args.wdi_downloads} if args.wdi_downloads else {}
             result = await import_data(
                 db,
                 connector,
-                args.countries,
+                None if args.all_countries else args.countries,
                 args.start_year,
                 args.end_year,
                 settings.raw_data_dir,
+                **options,
             )
             print(
                 f"Completed {result.id}: {result.records_processed} observations; dataset {result.dataset_version}"
@@ -53,15 +56,30 @@ def main() -> None:
     parser.add_argument(
         "--source", choices=["world-bank", "imf", "adb"], default="world-bank"
     )
-    parser.add_argument(
+    countries = parser.add_mutually_exclusive_group()
+    countries.add_argument(
         "--countries", nargs="+", default=["USA", "IND", "BRA", "DEU", "JPN", "ZAF"]
+    )
+    countries.add_argument(
+        "--all-countries", action="store_true", help="Import all World Bank economies"
+    )
+    parser.add_argument(
+        "--wdi-downloads",
+        type=Path,
+        help="Reuse a directory of WDI indicator ZIP files named by code",
     )
     parser.add_argument("--start-year", type=int, default=2015)
     parser.add_argument("--end-year", type=int, default=date.today().year - 1)
     configure_logging()
     args = parser.parse_args()
+    if args.all_countries and args.source != "world-bank":
+        parser.error("--all-countries requires the World Bank source")
+    if args.wdi_downloads and not args.all_countries:
+        parser.error("--wdi-downloads requires --all-countries")
     try:
         asyncio.run(run(args))
+    except KeyboardInterrupt:
+        parser.exit(130, "Ingestion interrupted.\n")
     except SourceError as exc:
         # Connector errors contain curated explanations, never database credentials.
         parser.exit(1, f"Ingestion failed: {exc}\n")

@@ -1,5 +1,7 @@
 import asyncio
 import json
+from io import BytesIO
+from zipfile import ZipFile
 
 import httpx
 import pytest
@@ -7,6 +9,8 @@ from sqlalchemy import func, select
 
 from backend.app.models import Country, DataSnapshot, IngestionRun, Observation
 from ingestion.connectors.world_bank import SourceError, WorldBankClient
+from ingestion.indicators import WORLD_BANK_INDICATORS
+from ingestion.pipelines.world_bank import ingest_world_bank
 from ingestion.validation.records import ValidatedObservation, normalize_iso3
 from backend.tests.conftest import ingest_fixture
 
@@ -37,6 +41,54 @@ def test_ingestion_preserves_null_zero_and_provenance(populated, tmp_path):
     assert len(raw["pages"]) == 13
     assert raw["dataset_version"] == row.dataset_version
     assert "definition" in snapshot.manifest["indicators"][0]
+
+
+def test_global_world_bank_import_preserves_coverage_and_missing_values(db, tmp_path):
+    def fetch_archive(request):
+        code = request.url.path.rsplit("/", 1)[-1]
+        assert request.url.params["downloadformat"] == "csv"
+        content = BytesIO()
+        with ZipFile(content, "w") as archive:
+            archive.writestr(
+                "Metadata_Country_fixture.csv",
+                "Country Code,Region,IncomeGroup,SpecialNotes,TableName\n"
+                "USA,North America,High income,,United States\n"
+                "WLD,,,,World\n",
+            )
+            archive.writestr(
+                "Metadata_Indicator_fixture.csv",
+                "INDICATOR_CODE,INDICATOR_NAME,SOURCE_NOTE\n"
+                f"{code},Synthetic indicator,Synthetic definition\n",
+            )
+            archive.writestr(
+                "API_fixture.csv",
+                "Data Source,World Development Indicators\n\n"
+                "Last Updated Date,2025-07-01\n\n"
+                "Country Name,Country Code,Indicator Name,Indicator Code,2023,2024\n"
+                f"United States,USA,Synthetic indicator,{code},0,\n"
+                f"World,WLD,Synthetic indicator,{code},4,5\n",
+            )
+        return httpx.Response(200, content=content.getvalue())
+
+    async def run():
+        async with httpx.AsyncClient(
+            transport=httpx.MockTransport(fetch_archive)
+        ) as client:
+            return await ingest_world_bank(
+                db, WorldBankClient(client), None, 2023, 2024, tmp_path
+            )
+
+    imported = asyncio.run(run())
+    assert imported.records_processed == 2 * len(WORLD_BANK_INDICATORS)
+    assert db.scalars(select(Country.iso3)).all() == ["USA"]
+    observations = db.scalars(select(Observation)).all()
+    assert all(
+        row.source_revision_date.isoformat() == "2025-07-01" for row in observations
+    )
+    assert {row.value for row in observations} == {0.0, None}
+    archive = json.loads((tmp_path / f"{imported.id}.json").read_text())
+    assert len(archive["pages"]) == len(WORLD_BANK_INDICATORS)
+    assert all("zip_base64" in page for page in archive["pages"])
 
 
 def test_repeat_ingestion_is_idempotent(populated, tmp_path):

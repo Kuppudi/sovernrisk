@@ -6,7 +6,7 @@ import { WorldMap } from '../components/WorldMap'
 import { ErrorState, Loading } from '../components/UI'
 import {
   useCountries,
-  useFreshness,
+  useWorldBankCoverage,
   useIndicators,
   useMapData,
   useWorldShapes,
@@ -26,15 +26,12 @@ export function MapExplorer({
   const { search } = useLocation()
   const countries = useCountries()
   const indicators = useIndicators()
-  const freshness = useFreshness()
+  const coverage = useWorldBankCoverage()
   const shapes = useWorldShapes()
   const [chosenIndicator, setChosenIndicator] = useState<string | null>(null)
   const [chosenYear, setChosenYear] = useState<number | null>(null)
 
-  const year =
-    chosenYear ??
-    freshness.data?.latest_observation_year ??
-    new Date().getFullYear() - 1
+  const year = chosenYear ?? 2025
   const definitions = indicators.data || []
   const indicator =
     chosenIndicator ??
@@ -45,7 +42,7 @@ export function MapExplorer({
   const mapData = useMapData(
     indicator,
     year,
-    definitions.length > 0 && !freshness.isPending,
+    definitions.length > 0,
   )
   const availablePlaces = getCountryChoices(shapes.data, importedCountries)
   const availableYears = getAvailableYears(year, mapData.data?.available_years || [])
@@ -58,6 +55,16 @@ export function MapExplorer({
 
   return (
     <>
+      {coverage.data && (
+        <div className="dataset-summary" aria-label="World Bank data coverage">
+          <strong>World Bank · {coverage.data.start_year}–{coverage.data.end_year}</strong>
+          <span>{coverage.data.country_count} countries/economies</span>
+          <span>{coverage.data.indicator_count} indicators</span>
+          <span>{coverage.data.reported_count.toLocaleString()} reported values</span>
+          <span>{coverage.data.missing_count.toLocaleString()} missing values</span>
+        </div>
+      )}
+      {coverage.error && <ErrorState error={coverage.error} />}
       <div className="dashboard-filters">
         <label className="map-field">
           Indicator
@@ -133,7 +140,7 @@ export function MapExplorer({
             />
           )}
           <div className="map-source-line">
-            <span>{importedCountries.length} countries loaded</span>
+            <span>{importedCountries.length} countries/economies · one value per country for {year}</span>
             <span>{mapData.data?.source_name}</span>
           </div>
         </section>

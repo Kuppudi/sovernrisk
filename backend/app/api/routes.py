@@ -7,13 +7,14 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from backend.app.db.session import get_db
-from backend.app.models import Country, IngestionRun, Indicator, Observation
+from backend.app.models import Country, DataSource, IngestionRun, Indicator, Observation
 from backend.app.schemas.api import (
     ISO3,
     CompareRequest,
     CompareResponse,
     CountryOut,
     CountryPage,
+    DataCoverage,
     Freshness,
     IndicatorOut,
     MapDataOut,
@@ -35,6 +36,30 @@ from backend.app.services.observations import (
 
 router = APIRouter()
 Db = Annotated[Session, Depends(get_db)]
+
+
+@router.get("/api/data/world-bank/coverage", response_model=DataCoverage, tags=["Indicators"])
+def world_bank_coverage(db: Db, years: Annotated[YearFilter, Query()]):
+    codes = list(db.scalars(
+        select(Indicator.code).join(DataSource).where(DataSource.provider_name == "World Bank WDI")
+    ))
+    totals = (0, 0, 0, 0)
+    if codes:
+        country_codes = list(db.scalars(select(Country.iso3)))
+        latest = observation_query(
+            country_codes, codes, years.start_year, years.end_year
+        ).order_by(None).subquery()
+        totals = db.execute(select(
+            func.count(), func.count(latest.c.value),
+            func.count(distinct(latest.c.country_iso3)),
+            func.count(distinct(latest.c.indicator_id)),
+        )).one()
+    total, reported, country_count, indicator_count = totals
+    return DataCoverage(
+        source="World Bank WDI", start_year=years.start_year, end_year=years.end_year,
+        country_count=country_count, indicator_count=indicator_count,
+        observation_count=total, reported_count=reported, missing_count=total - reported,
+    )
 
 
 @router.get("/api/data/map", response_model=MapDataOut, tags=["Indicators"])

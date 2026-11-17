@@ -16,6 +16,7 @@ def test_filter_years_indicators_and_missing_data(client, populated):
     response = client.get(
         "/api/countries/USA/indicators?start_year=2024&end_year=2024&indicator=FP.CPI.TOTL.ZG"
     )
+
     assert response.status_code == 200, response.text
     body = response.json()
     assert body["total"] == 1
@@ -30,6 +31,21 @@ def test_filter_years_indicators_and_missing_data(client, populated):
         ).status_code
         == 422
     )
+
+
+def test_world_bank_coverage_counts_latest_values_once(client, populated, tmp_path):
+    path = "/api/data/world-bank/coverage?start_year=2023&end_year=2024"
+    initial = client.get(path)
+    assert initial.status_code == 200
+    assert initial.json()["observation_count"] == 24
+    assert initial.json()["country_count"] == 2
+    assert initial.json()["indicator_count"] == 6
+    assert initial.json()["missing_count"] == 4
+    ingest_fixture(populated, tmp_path, changed=True)
+    revised = client.get(path).json()
+    assert revised["observation_count"] == 24
+    assert revised["missing_count"] == 6
+    assert revised["reported_count"] == 18
 
 
 def test_revised_null_supersedes_old_value_and_old_snapshot_is_queryable(

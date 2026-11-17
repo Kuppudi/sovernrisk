@@ -5,6 +5,11 @@ interface IndicatorLabel {
 }
 
 const labels: Record<string, IndicatorLabel> = {
+  'NY.GDP.MKTP.CD': {
+    name: 'GDP',
+    description: 'Total economic output in current US dollars.',
+    unit: 'Current US dollars',
+  },
   'NY.GDP.MKTP.KD.ZG': {
     name: 'GDP growth',
     description: 'How much an economy grew or shrank in a year.',

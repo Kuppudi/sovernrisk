@@ -158,6 +158,22 @@ p {
 .dashboard-overview > h1 {
   margin-bottom: 18px;
 }
+.dataset-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 22px;
+  margin-bottom: 16px;
+  color: #587183;
+  font-size: 12px;
+}
+.table-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 20px;
+  font-size: 12px;
+}
 .dashboard-filters {
   display: grid;
   grid-template-columns: minmax(0, 1.2fr) 110px minmax(0, 1fr);

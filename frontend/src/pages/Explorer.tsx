@@ -18,9 +18,11 @@ export function Explorer({
   countryName: string
 }) {
   const indicators = useIndicators()
-  const [indicator, setIndicator] = useState('NY.GDP.MKTP.KD.ZG')
+  const [indicator, setIndicator] = useState('')
   const [start, setStart] = useState(2015)
-  const [end, setEnd] = useState(new Date().getFullYear() - 1)
+  const [end, setEnd] = useState(2025)
+  const [page, setPage] = useState(0)
+  const pageSize = 50
   const valid =
     Number.isInteger(start) &&
     Number.isInteger(end) &&
@@ -28,11 +30,14 @@ export function Explorer({
     end <= 2100 &&
     start <= end
   const params = new URLSearchParams({
-    indicator,
     start_year: String(start),
     end_year: String(end),
-  }).toString()
-  const data = useObservations(valid ? country : '', params)
+  })
+  if (indicator) params.set('indicator', indicator)
+  const tableParams = new URLSearchParams(params)
+  tableParams.set('limit', String(pageSize))
+  tableParams.set('offset', String(page * pageSize))
+  const data = useObservations(valid ? country : '', tableParams.toString())
   const definition = indicators.data?.find((item) => item.code === indicator)
   return (
     <>
@@ -45,8 +50,9 @@ export function Explorer({
             Indicator
             <select
               value={indicator}
-              onChange={(e) => setIndicator(e.target.value)}
+              onChange={(e) => { setIndicator(e.target.value); setPage(0) }}
             >
+              <option value="">All indicators</option>
               {indicators.data?.map((item) => (
                 <option key={item.code} value={item.code}>
                   {item.name}
@@ -61,7 +67,7 @@ export function Explorer({
               min="1960"
               max="2100"
               value={start}
-              onChange={(e) => setStart(Number(e.target.value))}
+              onChange={(e) => { setStart(Number(e.target.value)); setPage(0) }}
             />
           </label>
           <label className="field year-field">
@@ -71,7 +77,7 @@ export function Explorer({
               min="1960"
               max="2100"
               value={end}
-              onChange={(e) => setEnd(Number(e.target.value))}
+              onChange={(e) => { setEnd(Number(e.target.value)); setPage(0) }}
             />
           </label>
           {valid && (
@@ -97,17 +103,24 @@ export function Explorer({
         <ErrorState error={data.error} />
       ) : (
         <>
-          <Panel
+          {indicator && <Panel
             title={definition?.name || indicator}
             subtitle={definition?.unit}
           >
             <TrendChart observations={data.data?.items || []} />
-          </Panel>
+          </Panel>}
           <Panel
             title="Historical observations"
             subtitle={`${data.data?.total || 0} records · missing values remain empty in CSV`}
           >
             <ObservationTable items={data.data?.items || []} />
+            <div className="table-pagination">
+              <button className="button secondary" disabled={page === 0} onClick={() => setPage(page - 1)}>Previous</button>
+              <span aria-live="polite">
+                {data.data?.total ? page * pageSize + 1 : 0}–{Math.min((page + 1) * pageSize, data.data?.total || 0)} of {data.data?.total || 0}
+              </span>
+              <button className="button secondary" disabled={(page + 1) * pageSize >= (data.data?.total || 0)} onClick={() => setPage(page + 1)}>Next</button>
+            </div>
           </Panel>
           {definition && (
             <Panel title="Indicator definition" subtitle={definition.code}>

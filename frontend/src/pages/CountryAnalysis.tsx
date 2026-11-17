@@ -21,7 +21,7 @@ export function CountryAnalysis({
 }) {
   const indicators = useIndicators()
   const [indicator, setIndicator] = useState('NY.GDP.MKTP.KD.ZG')
-  const data = useObservations(iso3)
+  const data = useObservations(iso3, 'start_year=2015&end_year=2025')
   const latest = new Map<
     string,
     NonNullable<typeof data.data>['items'][number]
