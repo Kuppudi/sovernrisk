@@ -18,7 +18,7 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = ["pytest>=8.3,<10"]
-ml = ["pandas>=2.2,<4", "numpy>=2,<3", "scikit-learn>=1.6,<2", "xgboost>=3,<4", "shap>=0.47,<1", "joblib>=1.4,<2"]
+ml = ["pandas>=2.2,<4", "numpy>=2,<3", "scikit-learn>=1.6,<2", "xgboost>=3,<4", "shap>=0.47,<1", "joblib>=1.4,<2", "openpyxl>=3.1,<4"]
 
 [tool.setuptools.packages.find]
 include = ["backend*", "ingestion*", "ml*"]
