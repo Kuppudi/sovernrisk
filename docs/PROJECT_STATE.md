@@ -2,6 +2,17 @@
 
 ## Latest feature · API frontend and debt report research
 
+The latest user-facing layout shows country fundamentals directly below the
+map. Country comparison, report research and data explorer sections are absent
+from the dashboard. AI / RAG appears as a separate Coming soon card beside the
+map. Countries are selected directly on the map. The map defaults to 2025 GDP growth,
+and fundamentals show ten compact latest-value indicators plus a 2015–2025 GDP
+growth history graph.
+The duplicate country-indicator preview, coverage banner, extra top filters and
+raw observation table were removed. Legacy comparison/report/explorer URLs return
+to the dashboard. Report
+processing and retrieval remain backend groundwork for a future release.
+
 The user selected World Bank API reads for the frontend and Azure OpenAI for
 report explanations. World Bank country catalogs, maps, histories, comparisons,
 CSV exports and deterministic summaries now use official WDI download responses
@@ -18,8 +29,9 @@ does not supply a validated live score. Generated explanations receive explicit
 model availability and stored observation context.
 
 Local verification processed the November 10, 2026 Kenya Economic Update into
-68 pages and 228 chunks, and the browser retrieved cited debt/refinancing
-passages. The report index is preserved when a refresh fails. Embedded PDF font
+68 pages and 228 chunks. Before the user requested the Coming soon presentation,
+the research preview retrieved cited debt/refinancing passages. The report index
+is preserved when a refresh fails. Embedded PDF font
 decoding, missing text/OCR errors, source host validation, retries, duplicate
 processing and cross-country retrieval isolation are covered.
 

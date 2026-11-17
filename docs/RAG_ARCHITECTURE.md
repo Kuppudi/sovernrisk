@@ -1,5 +1,9 @@
 # VEGA data and explanation flow
 
+The current user interface shows AI / RAG as Coming soon. Country fundamentals
+are visible directly below the map. The report processing and explanation
+services below are backend groundwork for the planned AI card.
+
 ```mermaid
 flowchart LR
     WB[World Bank API] --> CACHE[App Service memory cache<br/>Five minutes]
@@ -16,7 +20,7 @@ flowchart LR
     MODEL --> AZURE
     QUESTION --> AZURE
     AZURE --> ANSWER[Explanation with dated context<br/>and clickable PDF page citations]
-    ANSWER --> UI
+    ANSWER -. Planned AI card .-> UI
 ```
 
 World Bank frontend reads use the official WDI download API and a bounded

@@ -45,9 +45,9 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
                 path="countries/:iso3?"
                 element={<DashboardRedirect section="fundamentals" />}
               />
-              <Route path="compare" element={<DashboardRedirect section="compare" />} />
-              <Route path="reports" element={<DashboardRedirect section="reports" />} />
-              <Route path="explorer" element={<DashboardRedirect section="data" />} />
+              <Route path="compare" element={<DashboardRedirect section="" />} />
+              <Route path="reports" element={<DashboardRedirect section="" />} />
+              <Route path="explorer" element={<DashboardRedirect section="" />} />
               <Route
                 path="*"
                 element={

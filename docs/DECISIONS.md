@@ -2,6 +2,11 @@
 
 ## 2026-11-17 · API frontend and country report RAG
 
+The user subsequently simplified the public dashboard. Show country fundamentals
+inline, and present AI / RAG as a Coming soon card. Comparison, country reports
+and data explorer controls do not appear in the user interface. Keep the PDF
+and retrieval services as groundwork for the later AI card.
+
 The user chose API-backed World Bank frontend data with short server caching,
 retaining versioned structured snapshots for model training. Reuse official WDI
 CSV download parsing because the JSON observations endpoint timed out during

@@ -29,10 +29,11 @@ Use `--wdi-downloads DIRECTORY` to reuse saved World Bank per-indicator CSV
 archives named `INDICATOR_CODE.zip`.
 
 The World Bank frontend now reads the official download API through App Service,
-with a five-minute memory cache and no observation writes. The data explorer
-defaults to all ten World Bank indicators, supports paginated tables, and exports
-the complete filtered country dataset. The map shows one selected indicator/year,
-with country trends and comparisons below it. Versioned imports remain available
+with a five-minute memory cache and no observation writes. The API supplies all
+ten World Bank indicators, paginated history and complete filtered CSV exports.
+The public dashboard selects a country on the map and shows compact fundamentals
+plus its 2015–2025 GDP-growth graph. AI / RAG is presented as Coming soon.
+Versioned imports remain available
 for ML training and earlier history through the stored-data API. Source gaps,
 including unavailable 2025 values, remain explicitly missing.
 

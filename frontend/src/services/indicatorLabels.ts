@@ -5,6 +5,21 @@ interface IndicatorLabel {
 }
 
 const labels: Record<string, IndicatorLabel> = {
+  'DT.DOD.DECT.GN.ZS': {
+    name: 'External debt',
+    description: 'External debt outstanding as a share of gross national income.',
+    unit: 'Share of GNI (%)',
+  },
+  'DT.TDS.DECT.EX.ZS': {
+    name: 'Debt service',
+    description: 'External debt payments as a share of exports and primary income.',
+    unit: 'Share of exports (%)',
+  },
+  'FI.RES.TOTL.MO': {
+    name: 'Foreign reserves',
+    description: 'International reserves measured in months of imports.',
+    unit: 'Months of imports',
+  },
   'NY.GDP.MKTP.CD': {
     name: 'GDP',
     description: 'Total economic output in current US dollars.',

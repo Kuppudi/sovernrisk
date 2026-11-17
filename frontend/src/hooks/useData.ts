@@ -26,13 +26,7 @@ export const useCountries = () =>
 export const useIndicators = () =>
   useQuery({
     queryKey: ['indicators'],
-    queryFn: async () => {
-      const [live, stored] = await Promise.all([
-        request<Indicator[]>('/api/live/world-bank/indicators'),
-        request<Indicator[]>('/api/indicators').catch(() => [] as Indicator[]),
-      ])
-      return [...live, ...stored.filter((item) => !isWorldBankIndicator(item.code))]
-    },
+    queryFn: () => request<Indicator[]>('/api/live/world-bank/indicators'),
   })
 export const useFreshness = () =>
   useQuery({

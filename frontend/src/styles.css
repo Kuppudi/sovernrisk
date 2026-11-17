@@ -158,14 +158,6 @@ p {
 .dashboard-overview > h1 {
   margin-bottom: 18px;
 }
-.dataset-summary {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px 22px;
-  margin-bottom: 16px;
-  color: #587183;
-  font-size: 12px;
-}
 .table-pagination {
   display: flex;
   align-items: center;
@@ -176,12 +168,7 @@ p {
 }
 .dashboard-filters {
   display: grid;
-  grid-template-columns: minmax(0, 1.2fr) 110px minmax(0, 1fr);
-  gap: 16px;
-  padding: 12px 20px;
-  background: #fff;
-  border: 1px solid #e0e7ee;
-  border-radius: 9px;
+  grid-template-columns: minmax(0, 340px);
   margin-bottom: 20px;
 }
 .dashboard-map-layout {
@@ -664,17 +651,44 @@ details summary {
   min-width: 0;
   max-width: 100%;
 }
-.report-research { padding: 0 22px 22px; }
-.debt-report-list { margin: 18px 0; }
-.debt-report { border-bottom: 1px solid #e1e8ee; padding: 16px 0; }
-.debt-report > a { font-size: 14px; font-weight: 600; }
-.debt-report p, .report-citation p { font-size: 12px; line-height: 1.7; margin: 10px 0; }
-.report-actions { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-top: 14px; }
-.report-actions label { font-size: 12px; }
-.report-citation { border-top: 1px solid #e1e8ee; padding: 15px 0; }
-.report-citation summary { cursor: pointer; font-size: 12px; line-height: 1.7; }
-.report-citation a { font-size: 12px; }
-.rag-answer { white-space: pre-wrap; font-size: 14px; line-height: 1.8; margin: 20px 0; }
+.country-fundamentals {
+  margin-top: 20px;
+}
+.country-fundamentals > h2 {
+  font-size: 16px;
+  margin-bottom: 12px;
+}
+.country-fundamentals .indicator-grid {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+  margin-bottom: 0;
+}
+.country-fundamentals .indicator-card {
+  padding: 11px 12px;
+  border-radius: 6px;
+}
+.country-fundamentals .indicator-card span {
+  font-size: 10px;
+  min-height: 0;
+}
+.country-fundamentals .indicator-card strong {
+  font-size: 19px;
+  margin: 5px 0;
+}
+.country-fundamentals .indicator-card small {
+  font-size: 9px;
+}
+.fundamentals-history {
+  margin-top: 16px;
+  padding: 14px 12px 6px;
+  background: #fff;
+  border: 1px solid #e1e8ee;
+  border-radius: 6px;
+}
+.fundamentals-history h3 {
+  font-size: 12px;
+  margin-bottom: 8px;
+}
 .year-field {
   min-width: 75px;
   max-width: 100px;
@@ -963,6 +977,9 @@ td a {
 }
 
 @media (max-width: 800px) {
+  .country-fundamentals .indicator-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
   .dashboard-map-layout {
     grid-template-columns: minmax(0, 1fr);
   }
@@ -1000,9 +1017,8 @@ td a {
     padding: 28px 17px;
   }
   .dashboard-filters {
-    padding: 12px;
-    grid-template-columns: minmax(0, 1fr) 82px;
-    gap: 12px;
+    padding: 0;
+    grid-template-columns: minmax(0, 1fr);
   }
   .dashboard-country-field {
     grid-column: 1 / -1;

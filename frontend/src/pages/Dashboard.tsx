@@ -1,57 +1,15 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { Link, useLocation, useSearchParams } from 'react-router-dom'
+import type { ReactNode } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { ErrorState, Loading } from '../components/UI'
 import { useCountries } from '../hooks/useData'
-import { Comparison } from './Comparison'
 import { CountryAnalysis } from './CountryAnalysis'
-import { Explorer } from './Explorer'
 import { MapExplorer } from './MapExplorer'
-import { Reports } from './Reports'
-
-function DashboardSection({
-  id,
-  title,
-  children,
-}: {
-  id: string
-  title: string
-  children: ReactNode
-}) {
-  const location = useLocation()
-  const details = useRef<HTMLDetailsElement>(null)
-  const summary = useRef<HTMLElement>(null)
-  const [visited, setVisited] = useState(false)
-
-  useEffect(() => {
-    if (location.hash !== `#${id}` || !details.current) return
-    details.current.open = true
-    setVisited(true)
-    summary.current?.focus({ preventScroll: true })
-    summary.current?.scrollIntoView({ block: 'start' })
-  }, [id, location.hash, location.key])
-
-  return (
-    <details
-      id={id}
-      ref={details}
-      className="dashboard-section"
-      onToggle={(event) => {
-        if (event.currentTarget.open) setVisited(true)
-      }}
-    >
-      <summary ref={summary}>
-        <h2>{title}</h2>
-      </summary>
-      {visited && <div className="dashboard-section-body">{children}</div>}
-    </details>
-  )
-}
 
 export function Dashboard() {
   const [params, setParams] = useSearchParams()
   const country = (params.get('country') || '').toUpperCase()
   const countries = useCountries()
-  const importedCountry = countries.data?.items.find(
+  const selectedCountry = countries.data?.items.find(
     (item) => item.iso3 === country,
   )
 
@@ -67,13 +25,13 @@ export function Dashboard() {
     if (!country) {
       return (
         <p className="dashboard-section-message">
-          Select a country in the <a href="#country-picker">dashboard filters</a>.
+          Select a country on the map.
         </p>
       )
     }
     if (countries.isPending) return <Loading />
     if (countries.error) return <ErrorState error={countries.error} />
-    if (!importedCountry) {
+    if (!selectedCountry) {
       return (
         <p className="dashboard-section-message">
           This country/economy is outside the World Bank data catalog.
@@ -86,42 +44,15 @@ export function Dashboard() {
   return (
     <>
       <div className="dashboard-overview">
-        <h1>Sovereign Credit Risk Dashboard</h1>
+        <h1>Sovereign credit risk</h1>
         <MapExplorer country={country} onCountryChange={selectCountry} />
       </div>
-      <div className="dashboard-sections">
-        <DashboardSection id="fundamentals" title="Country fundamentals">
-          {countryContent(
-            <CountryAnalysis
-              country={importedCountry?.name || country}
-              iso3={country}
-              reportLink={
-                <Link
-                  className="button secondary"
-                  to={{ search: params.toString(), hash: 'reports' }}
-                >
-                  View report
-                </Link>
-              }
-            />,
-          )}
-        </DashboardSection>
-        <DashboardSection id="compare" title="Country comparison">
-          <Comparison />
-        </DashboardSection>
-        <DashboardSection id="reports" title="Country reports">
-          {countryContent(<Reports country={country} />)}
-        </DashboardSection>
-        <DashboardSection id="data" title="Data explorer">
-          {countryContent(
-            <Explorer
-              key={country}
-              country={country}
-              countryName={importedCountry?.name || country}
-            />,
-          )}
-        </DashboardSection>
-      </div>
+      <section id="fundamentals" className="country-fundamentals" aria-label="Country fundamentals">
+        <h2>{selectedCountry ? `${selectedCountry.name} fundamentals` : 'Country fundamentals'}</h2>
+        {countryContent(
+          <CountryAnalysis iso3={country} />,
+        )}
+      </section>
     </>
   )
 }

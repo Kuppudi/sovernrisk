@@ -1,6 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
 import { request } from '../services/api'
-import { DebtReports } from '../components/DebtReports'
 import type { Report } from '../types/api'
 import {
   ErrorState,
@@ -21,7 +20,6 @@ export function Reports({ country }: { country: string }) {
   })
   return (
     <>
-      <DebtReports key={country} country={country} />
       {report.isPending ? (
         <Loading />
       ) : report.error ? (
