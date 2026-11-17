@@ -1,5 +1,41 @@
 # Project state · 2026-11-17
 
+## Current handoff · ML starter and Azure storage direction
+
+The user requested source delivery for Windows VS Code/Copilot and explicitly
+stopped Azure publishing. Deliver this work on
+`feature/ml-starter-copilot-handoff`; do not merge main or deploy. The existing
+main-branch Azure workflow still publishes automatically and needs manual
+deployment control before a future main merge. Earlier deployment occurred
+before the user changed this instruction.
+
+The user has App Service, Blob Storage and Cosmos DB. Blob/Cosmos are the target
+for durable data, reports and models. Current SQLAlchemy/PostgreSQL paths are
+still implemented and require a storage port. Windows development uses native
+Python/Node, Azure CLI and GitHub SSH. Docker and PostgreSQL Flexible Server
+are outside this plan. See `WINDOWS_AZURE_HANDOFF.md` for the service inventory,
+implementation prompt and commands.
+
+`ml/default_training.py` and `notebooks/default_training.ipynb` implement an
+offline country-level default-onset experiment. It uses nine WDI features lagged
+two years from outcome year, the 2026 BoC–BoE conventional-debt labels, explicit
+prior-year zero debt in default, chronological train/validation/test partitions,
+and event-rate/logistic/boosting comparisons. The notebook contains no saved
+outputs. Input data and generated artifacts remain ignored.
+
+The goal is a validated default-onset probability, then contextual country
+report explanations. Historical-vintage validity, calibration, walk-forward
+evaluation and serving integration remain incomplete. Azure ML jobs, Blob/Cosmos
+adapters and live model inference are planned. Production models remain
+unavailable and AI / RAG stays Coming soon. Copilot instructions now describe
+this scope, the research entry points, limitations and the Azure target.
+
+Synthetic ML checks cover label eligibility, lagged feature alignment, temporal
+splits and notebook-to-artifact execution. All four passed locally on Python
+3.14 with the isolated ML dependencies. The ML research workflow runs these
+checks on Python 3.13 without cloud access. The run uses synthetic inputs and
+does not revalidate the real-data research results or Azure runtime.
+
 ## Latest feature · API frontend and debt report research
 
 The latest user-facing layout shows country fundamentals directly below the

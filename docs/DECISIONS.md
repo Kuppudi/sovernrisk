@@ -1,5 +1,31 @@
 # Architecture decisions
 
+## 2026-11-17 · Windows ML handoff, Blob/Cosmos and source-only delivery
+
+The latest user direction uses the existing App Service, Blob Storage and
+Cosmos DB. This supersedes the previous PostgreSQL storage target. Port the
+current SQL and local-file paths deliberately; the target migration has not
+been implemented. Use native Windows Python/Node, Azure CLI and GitHub SSH.
+Docker is outside this implementation. Azure resource changes and deployment
+are deferred to a later explicit instruction.
+
+Push the ML starter, its tests, the Windows handoff and Copilot instructions on
+a feature branch. The user explicitly stopped Azure publishing. Earlier main
+merge authorization does not authorize deployment now. The current automatic
+main workflow must be addressed before a later main merge.
+
+The initial ML target is country-level conventional sovereign default onset,
+conditioned on explicit prior-year zero default stocks in the BoC–BoE workbook.
+Keep nine WDI research features and chronological model/threshold selection.
+The two-year lag is an assumption with revised historical data; it is not proof
+of historical availability. Keep production scores unavailable while research
+validation and inference integration remain incomplete.
+
+Plan Azure ML offline jobs with Blob datasets/artifacts, Cosmos model/prediction
+metadata, and App Service inference. A later Azure OpenAI RAG branch will combine
+country-scoped PDF passages and real model context with page citations. Keep
+the public AI / RAG card Coming soon during this work.
+
 ## 2026-11-17 · API frontend and country report RAG
 
 The user subsequently simplified the public dashboard. Show country fundamentals

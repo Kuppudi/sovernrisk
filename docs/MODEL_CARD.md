@@ -1,12 +1,19 @@
-# Model card · models unavailable
+# Model card · production models unavailable
 
-**Model Not Trained** for both sovereign credit risk and twelve-month downgrade probability. No artifacts, scores, rankings, distributions, probabilities, or SHAP explanations are served.
+An offline sovereign default-onset experiment is implemented in
+`ml/default_training.py` and `notebooks/default_training.ipynb`. It is
+retrospective research. Both production model endpoints remain unavailable;
+no research artifacts, probabilities or SHAP explanations are served.
 
 Intended use: sovereign credit and loan-repayment risk analysis for development-finance lenders, other financial institutions, and insurers. This is the product focus, not a claim that a repayment/default model has already been trained. A repayment outcome, time horizon, and authorized repayment/default history must be defined before training that model. A rating downgrade is a different event and must not be presented as loan non-repayment.
 
 ## Model A · Sovereign credit risk
 
-Target is not yet defined. A future target might be an explicitly scoped sovereign rating category or documented risk outcome. Economic series alone are not a validated rating or supervised target. No weighted-indicator proxy will be presented as an externally validated rating.
+The offline research target is the transition from zero to positive conventional
+sovereign debt in default between consecutive years in the 2026 BoC–BoE
+workbook. The experiment models eligible issuers with available WDI features
+and explicit label coverage. Loan-level repayment performance requires a
+loan-level outcome dataset.
 
 ## Model B · Twelve-month downgrade probability
 
@@ -22,4 +29,6 @@ Requires authorized rating event history, agency, issuer/instrument scope, curre
 6. Store target/license definition, dataset snapshots, preprocessing, metrics, dependency versions, schema, artifact integrity, and reviewed limitations. Load only trusted artifacts, never user uploads.
 7. Validate lightweight offline-loaded inference, invalid/stale/missing feature rejection, calibrated probabilities, and faithful attributions.
 
-Optional dependencies are in `.[ml]`. Training, preprocessing, calibration, backtesting, SHAP, artifact loading, and model integration are **not implemented in milestones 1–2**. Reserved directories are extension points, not completed pipelines.
+Optional dependencies are in `.[ml]`. The offline experiment uses
+chronological train, validation, and test splits. Production validation
+requires historical feature vintages, calibration, and artifact checks.
