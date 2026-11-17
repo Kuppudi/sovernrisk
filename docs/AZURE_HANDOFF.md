@@ -1,4 +1,4 @@
-# VEGA Windows VS Code handoff
+# VEGA Azure implementation handoff
 
 Prepared November 17, 2026. This is an implementation handoff for Windows VS Code
 with Azure CLI authentication and GitHub over SSH. The current request is for

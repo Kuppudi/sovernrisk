@@ -1,7 +1,7 @@
 # VEGA · country economic data and sovereign default-risk research
 
 Read this file, `docs/PROJECT_STATE.md`, `docs/DECISIONS.md`,
-`docs/WINDOWS_AZURE_HANDOFF.md`, `ml/README.md` and `docs/MODEL_CARD.md`
+`docs/AZURE_HANDOFF.md`, `ml/README.md` and `docs/MODEL_CARD.md`
 before changing the project. The latest decisions below supersede older
 PostgreSQL, Docker, dashboard-tab and automatic-merge instructions.
 
@@ -72,7 +72,7 @@ PostgreSQL, Docker, dashboard-tab and automatic-merge instructions.
 - The user has an App Service, Blob Storage and Cosmos DB already. Discover
   their actual names, endpoints, Cosmos API and identities using Azure CLI.
   Target Blob for PDFs/datasets/models and Cosmos for metadata/chunks/predictions.
-  Read `docs/WINDOWS_AZURE_HANDOFF.md` for the implementation plan.
+  Read `docs/AZURE_HANDOFF.md` for the implementation plan.
 - SQLAlchemy/PostgreSQL, local PDF archives and SQL-backed health/report paths
   still exist in the code. The Blob/Cosmos migration is planned, not implemented.
   Changing connection strings alone does not perform that migration. Preserve

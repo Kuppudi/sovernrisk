@@ -13,7 +13,7 @@ The user has App Service, Blob Storage and Cosmos DB. Blob/Cosmos are the target
 for durable data, reports and models. Current SQLAlchemy/PostgreSQL paths are
 still implemented and require a storage port. Windows development uses native
 Python/Node, Azure CLI and GitHub SSH. Docker and PostgreSQL Flexible Server
-are outside this plan. See `WINDOWS_AZURE_HANDOFF.md` for the service inventory,
+are outside this plan. See `AZURE_HANDOFF.md` for the service inventory,
 implementation prompt and commands.
 
 `ml/default_training.py` and `notebooks/default_training.ipynb` implement an

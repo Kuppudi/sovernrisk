@@ -1,6 +1,6 @@
 # Architecture decisions
 
-## 2026-11-17 · Windows ML handoff, Blob/Cosmos and source-only delivery
+## 2026-11-17 · ML handoff, Blob/Cosmos and source-only delivery
 
 The latest user direction uses the existing App Service, Blob Storage and
 Cosmos DB. This supersedes the previous PostgreSQL storage target. Port the
@@ -9,7 +9,7 @@ been implemented. Use native Windows Python/Node, Azure CLI and GitHub SSH.
 Docker is outside this implementation. Azure resource changes and deployment
 are deferred to a later explicit instruction.
 
-Push the ML starter, its tests, the Windows handoff and Copilot instructions on
+Push the ML starter, its tests, the Azure handoff and Copilot instructions on
 a feature branch. The user explicitly stopped Azure publishing. Earlier main
 merge authorization does not authorize deployment now. The current automatic
 main workflow must be addressed before a later main merge.

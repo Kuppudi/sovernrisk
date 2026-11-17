@@ -29,7 +29,7 @@ production models unavailable pending historical-vintage validation.
 Use a snapshot covering 1990–2025 to reproduce the default split dates. A
 2015–2025 dashboard snapshot alone cannot supply the training partition.
 The current importer still uses SQL persistence. Follow
-[the Azure handoff](../docs/WINDOWS_AZURE_HANDOFF.md) to port snapshots to Blob;
+[the Azure handoff](../docs/AZURE_HANDOFF.md) to port snapshots to Blob;
 the training module itself reads files and needs no database or Docker.
 Supply an existing exported snapshot and the official workbook locally.
 
