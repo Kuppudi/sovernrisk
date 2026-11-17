@@ -1,19 +1,38 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { BrowserRouter, Link, Route, Routes } from 'react-router-dom'
+import {
+  BrowserRouter,
+  Link,
+  Navigate,
+  Route,
+  Routes,
+  useLocation,
+  useParams,
+} from 'react-router-dom'
 import { ErrorBoundary } from './components/UI'
 import { Layout } from './components/Layout'
-import { MapExplorer } from './pages/MapExplorer'
-import { CountryAnalysis } from './pages/CountryAnalysis'
-import { Comparison } from './pages/Comparison'
-import { Explorer } from './pages/Explorer'
-import { Reports } from './pages/Reports'
+import { Dashboard } from './pages/Dashboard'
 import './styles.css'
 
 const client = new QueryClient({
   defaultOptions: { queries: { staleTime: 60_000, retry: 1 } },
 })
+
+function DashboardRedirect({ section }: { section: string }) {
+  const { search } = useLocation()
+  const { iso3 } = useParams()
+  const params = new URLSearchParams(search)
+  if (iso3) params.set('country', iso3.toUpperCase())
+
+  return (
+    <Navigate
+      to={{ pathname: '/', search: params.toString(), hash: section }}
+      replace
+    />
+  )
+}
+
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <ErrorBoundary>
@@ -21,18 +40,20 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
         <BrowserRouter>
           <Routes>
             <Route element={<Layout />}>
-              <Route index element={<MapExplorer />} />
-              <Route path="countries" element={<CountryAnalysis />} />
-              <Route path="countries/:iso3" element={<CountryAnalysis />} />
-              <Route path="compare" element={<Comparison />} />
-              <Route path="reports" element={<Reports />} />
-              <Route path="explorer" element={<Explorer />} />
+              <Route index element={<Dashboard />} />
+              <Route
+                path="countries/:iso3?"
+                element={<DashboardRedirect section="fundamentals" />}
+              />
+              <Route path="compare" element={<DashboardRedirect section="compare" />} />
+              <Route path="reports" element={<DashboardRedirect section="reports" />} />
+              <Route path="explorer" element={<DashboardRedirect section="data" />} />
               <Route
                 path="*"
                 element={
                   <>
                     <h1>Page not found</h1>
-                    <Link to="/">Return to overview</Link>
+                    <Link to="/">Return to dashboard</Link>
                   </>
                 }
               />

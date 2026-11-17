@@ -15,16 +15,12 @@ export function RiskAssessment({ country }: RiskAssessmentProps) {
   return (
     <aside className="risk-assessment" aria-label="ML risk assessment">
       <div className="risk-card-heading">
-        <span className="risk-ml-label">ML</span>
+        <h2>Sovereign risk score</h2>
         <span className="risk-model-status" role="status">
           {status}
         </span>
       </div>
-      <h2>Sovereign risk score</h2>
-      <div className="risk-score" aria-label="Risk score unavailable">
-        —
-      </div>
-      <span className="risk-score-state">Unavailable</span>
+      <p className="risk-score">Unavailable</p>
       <dl className="risk-summary">
         <div>
           <dt>Country</dt>
@@ -33,10 +29,6 @@ export function RiskAssessment({ country }: RiskAssessmentProps) {
         <div>
           <dt>12m downgrade</dt>
           <dd>Unavailable</dd>
-        </div>
-        <div>
-          <dt>Model</dt>
-          <dd>{model.isSuccess ? 'Not trained' : '—'}</dd>
         </div>
       </dl>
       <details className="risk-model-details">

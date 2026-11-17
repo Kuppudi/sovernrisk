@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Link, useLocation } from 'react-router-dom'
 import { CountryPreview } from '../components/CountryPreview'
 import { RiskAssessment } from '../components/RiskAssessment'
 import { WorldMap } from '../components/WorldMap'
@@ -11,93 +12,95 @@ import {
   useWorldShapes,
 } from '../hooks/useData'
 import { getIndicatorLabel } from '../services/indicatorLabels'
-import {
-  getAvailableYears,
-  getCountryChoices,
-  type MapPlace,
-} from '../services/mapData'
+import { getAvailableYears, getCountryChoices } from '../services/mapData'
 
-type View = 'risk' | 'indicators'
+const defaultIndicator = 'NY.GDP.MKTP.KD.ZG'
 
-export function MapExplorer() {
+export function MapExplorer({
+  country,
+  onCountryChange,
+}: {
+  country: string
+  onCountryChange: (country: string) => void
+}) {
+  const { search } = useLocation()
   const countries = useCountries()
   const indicators = useIndicators()
   const freshness = useFreshness()
   const shapes = useWorldShapes()
-  const [view, setView] = useState<View>('risk')
-  const [indicator, setIndicator] = useState('NY.GDP.MKTP.KD.ZG')
+  const [chosenIndicator, setChosenIndicator] = useState<string | null>(null)
   const [chosenYear, setChosenYear] = useState<number | null>(null)
-  const [selectedPlace, setSelectedPlace] = useState<MapPlace | null>(null)
 
   const year =
     chosenYear ??
     freshness.data?.latest_observation_year ??
     new Date().getFullYear() - 1
+  const definitions = indicators.data || []
+  const indicator =
+    chosenIndicator ??
+    (definitions.some((item) => item.code === defaultIndicator)
+      ? defaultIndicator
+      : definitions[0]?.code || defaultIndicator)
   const importedCountries = countries.data?.items || []
-  const showIndicators = view === 'indicators'
   const mapData = useMapData(
     indicator,
     year,
-    showIndicators && Boolean(indicators.data?.length),
+    definitions.length > 0 && !freshness.isPending,
   )
   const availablePlaces = getCountryChoices(shapes.data, importedCountries)
-  const availableYears = getAvailableYears(
-    year,
-    mapData.data?.available_years || [],
-  )
-  const selectedCountry = mapData.data?.countries.find(
-    (country) => country.iso3 === selectedPlace?.iso3,
-  )
-  const selectedIndicator = indicators.data?.find((item) => item.code === indicator)
+  const availableYears = getAvailableYears(year, mapData.data?.available_years || [])
+  const selectedPlace = availablePlaces.find((place) => place.iso3 === country)
+  const selectedCountry = mapData.data?.countries.find((item) => item.iso3 === country)
+  const selectedIndicator = definitions.find((item) => item.code === indicator)
   const label = getIndicatorLabel(indicator, selectedIndicator)
-
-  // Economic values are used only in the indicator view. They are never risk scores.
-  const riskCountries = importedCountries.map((country) => ({
-    iso3: country.iso3,
-    value: null,
-  }))
-  const mapCountries = showIndicators
-    ? mapData.data?.countries || []
-    : riskCountries
-
-  function chooseCountry(code: string) {
-    const place = availablePlaces.find((country) => country.iso3 === code)
-    setSelectedPlace(place || null)
-  }
-
-  if (countries.isPending || shapes.isPending) return <Loading />
-  const error = countries.error || shapes.error
-  if (error) return <ErrorState error={error} />
+  const error = countries.error || shapes.error || indicators.error || mapData.error
+  const valuesPending = definitions.length > 0 && mapData.isPending
 
   return (
     <>
-      <div className="risk-page-heading">
-        <h1>Sovereign Credit Risk</h1>
-      </div>
-      <div className="risk-controls">
-        <div className="view-toggle" role="group" aria-label="Map view">
-          <button
-            aria-pressed={!showIndicators}
-            className={!showIndicators ? 'active' : ''}
-            onClick={() => setView('risk')}
+      <div className="dashboard-filters">
+        <label className="map-field">
+          Indicator
+          <select
+            value={indicator}
+            onChange={(event) => setChosenIndicator(event.target.value)}
+            disabled={!definitions.length}
           >
-            ML risk
-          </button>
-          <button
-            aria-pressed={showIndicators}
-            className={showIndicators ? 'active' : ''}
-            onClick={() => setView('indicators')}
+            {definitions.length ? (
+              definitions.map((item) => (
+                <option key={item.code} value={item.code}>
+                  {getIndicatorLabel(item.code, item).name}
+                </option>
+              ))
+            ) : (
+              <option value={indicator}>GDP growth</option>
+            )}
+          </select>
+        </label>
+        <label className="map-field">
+          Year
+          <select
+            value={year}
+            onChange={(event) => setChosenYear(Number(event.target.value))}
+            disabled={availableYears.length < 2}
           >
-            Indicators
-          </button>
-        </div>
-        <label className="map-field risk-country-field">
+            {availableYears.map((availableYear) => (
+              <option key={availableYear} value={availableYear}>
+                {availableYear}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="map-field dashboard-country-field">
           Country
           <select
-            value={selectedPlace?.iso3 || ''}
-            onChange={(event) => chooseCountry(event.target.value)}
+            id="country-picker"
+            value={country}
+            onChange={(event) => onCountryChange(event.target.value)}
+            disabled={!availablePlaces.length}
           >
             <option value="">Select country</option>
+            {country && !selectedPlace && <option value={country}>{country}</option>}
             {availablePlaces.map((place) => (
               <option key={place.iso3} value={place.iso3}>
                 {place.name}
@@ -105,77 +108,38 @@ export function MapExplorer() {
             ))}
           </select>
         </label>
-        {showIndicators && (
-          <>
-            <label className="map-field risk-indicator-field">
-              Indicator
-              <select
-                value={indicator}
-                onChange={(event) => setIndicator(event.target.value)}
-              >
-                {indicators.data?.map((item) => (
-                  <option key={item.code} value={item.code}>
-                    {getIndicatorLabel(item.code, item).name}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label className="map-field risk-year-field">
-              Year
-              <select
-                value={year}
-                onChange={(event) => setChosenYear(Number(event.target.value))}
-              >
-                {availableYears.map((availableYear) => (
-                  <option key={availableYear} value={availableYear}>
-                    {availableYear}
-                  </option>
-                ))}
-              </select>
-            </label>
-          </>
-        )}
       </div>
-      {showIndicators && (
-        <div className="indicator-caption">
-          <strong>{label.name}</strong>
-          <span>{label.unit}</span>
-        </div>
-      )}
-      {showIndicators && indicators.error ? (
-        <ErrorState error={indicators.error} />
-      ) : showIndicators && mapData.error ? (
-        <ErrorState error={mapData.error} />
-      ) : showIndicators && mapData.isPending ? (
-        <Loading />
-      ) : (
-        <div
-          className={
-            showIndicators ? 'map-and-country' : 'map-and-country risk-layout'
-          }
-        >
-          <section
-            className="map-surface"
-            aria-label={
-              showIndicators ? 'Economic indicators' : 'Sovereign risk map'
-            }
-          >
+      <div className="dashboard-map-layout">
+        <section className="map-surface" aria-label="Economic indicator map">
+          <div className="indicator-caption">
+            <h2>{label.name}</h2>
+            <span>{label.unit}</span>
+          </div>
+          {error ? (
+            <ErrorState error={error} />
+          ) : shapes.isPending || countries.isPending || indicators.isPending || valuesPending ? (
+            <div className="map-loading">
+              <Loading />
+            </div>
+          ) : (
             <WorldMap
-              shapes={shapes.data!}
-              countries={mapCountries}
+              shapes={shapes.data}
+              countries={mapData.data?.countries || []}
               indicator={indicator}
               unit={selectedIndicator?.unit}
               year={year}
-              selectedCountry={selectedPlace?.iso3 || null}
-              onSelectCountry={setSelectedPlace}
-              mode={view}
+              selectedCountry={country || null}
+              onSelectCountry={(place) => onCountryChange(place.iso3)}
             />
-            <div className="map-source-line">
-              <span>{importedCountries.length} countries loaded</span>
-              <span>{showIndicators ? mapData.data?.source_name : 'ML risk'}</span>
-            </div>
-          </section>
-          {showIndicators ? (
+          )}
+          <div className="map-source-line">
+            <span>{importedCountries.length} countries loaded</span>
+            <span>{mapData.data?.source_name}</span>
+          </div>
+        </section>
+        <div className="dashboard-country">
+          <RiskAssessment country={selectedPlace || null} />
+          {selectedPlace && (
             <CountryPreview
               place={selectedPlace}
               country={selectedCountry}
@@ -184,12 +148,21 @@ export function MapExplorer() {
               sourceName={mapData.data?.source_name}
               sourceUrl={mapData.data?.source_url}
               year={year}
+              loading={indicators.isPending || valuesPending}
+              detailsLink={
+                importedCountries.some((item) => item.iso3 === country) && (
+                  <Link
+                    to={{ search, hash: 'fundamentals' }}
+                    className="button preview-details"
+                  >
+                    View fundamentals
+                  </Link>
+                )
+              }
             />
-          ) : (
-            <RiskAssessment country={selectedPlace} />
           )}
         </div>
-      )}
+      </div>
     </>
   )
 }

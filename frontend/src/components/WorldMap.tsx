@@ -17,7 +17,6 @@ interface WorldMapProps {
   year: number
   selectedCountry: string | null
   onSelectCountry: (country: MapPlace) => void
-  mode?: 'risk' | 'indicators'
 }
 
 export function WorldMap({
@@ -28,7 +27,6 @@ export function WorldMap({
   year,
   selectedCountry,
   onSelectCountry,
-  mode = 'indicators',
 }: WorldMapProps) {
   const [hoveredCountry, setHoveredCountry] = useState<MapPlace | null>(null)
   const countryValues = new Map(
@@ -37,7 +35,6 @@ export function WorldMap({
   const range = getValueRange(countries.map((country) => country.value))
 
   function valueLabel(value: number | null) {
-    if (mode === 'risk') return 'Score unavailable'
     return formatIndicatorValue(value, indicator, unit)
   }
 
@@ -63,17 +60,14 @@ export function WorldMap({
         <div className="map-tooltip" role="status">
           <strong>{hoveredCountry.name}</strong>
           <span>
-            {valueLabel(countryValues.get(hoveredCountry.iso3) ?? null)}
-            {mode === 'indicators' ? ` · ${year}` : ''}
+            {valueLabel(countryValues.get(hoveredCountry.iso3) ?? null)} · {year}
           </span>
         </div>
       )}
       <svg
         viewBox="0 0 1000 500"
         role="group"
-        aria-label={
-          mode === 'risk' ? 'Sovereign risk map' : `Indicator map for ${year}`
-        }
+        aria-label={`Indicator map for ${year}`}
       >
         {countryPaths.map(({ country, path }, index) => {
           const value = countryValues.get(country.iso3) ?? null
@@ -91,7 +85,7 @@ export function WorldMap({
               className={isSelected ? 'map-country selected' : 'map-country'}
               role="button"
               tabIndex={countryValues.has(country.iso3) ? 0 : -1}
-              aria-label={`${country.name}: ${valueLabel(value)}${mode === 'indicators' ? ` in ${year}` : ''}`}
+              aria-label={`${country.name}: ${valueLabel(value)} in ${year}`}
               aria-pressed={isSelected}
               onClick={selectCountry}
               onKeyDown={(event) => {
@@ -113,9 +107,7 @@ export function WorldMap({
         })}
       </svg>
       <div className="map-legend" aria-label="Map color legend">
-        {mode === 'risk' ? (
-          <span>Scores unavailable</span>
-        ) : range ? (
+        {range ? (
           <div className="legend-scale">
             <div className="legend-colors">
               {mapColors.map((color) => (
@@ -130,12 +122,10 @@ export function WorldMap({
         ) : (
           <span>No reported values for this year</span>
         )}
-        {mode === 'indicators' && (
-          <div className="legend-missing">
-            <i />
-            No data
-          </div>
-        )}
+        <div className="legend-missing">
+          <i />
+          No data
+        </div>
       </div>
     </div>
   )

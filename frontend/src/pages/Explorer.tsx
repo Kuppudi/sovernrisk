@@ -1,21 +1,23 @@
 import { useState } from 'react'
-import { useCountries, useIndicators, useObservations } from '../hooks/useData'
+import { useIndicators, useObservations } from '../hooks/useData'
 import {
-  CountrySelect,
-  Empty,
   ErrorState,
   Icon,
   Loading,
   ObservationTable,
-  PageHeading,
   Panel,
+  SectionHeading,
 } from '../components/UI'
 import { TrendChart } from '../components/TrendChart'
 
-export function Explorer() {
-  const countries = useCountries()
+export function Explorer({
+  country,
+  countryName,
+}: {
+  country: string
+  countryName: string
+}) {
   const indicators = useIndicators()
-  const [country, setCountry] = useState('')
   const [indicator, setIndicator] = useState('NY.GDP.MKTP.KD.ZG')
   const [start, setStart] = useState(2015)
   const [end, setEnd] = useState(new Date().getFullYear() - 1)
@@ -34,30 +36,11 @@ export function Explorer() {
   const definition = indicators.data?.find((item) => item.code === indicator)
   return (
     <>
-      <PageHeading
-        title="Data"
-        action={
-          country && valid ? (
-            <a
-              className="button secondary"
-              href={`/api/countries/${country}/indicators.csv?${params}`}
-              download
-            >
-              <Icon name="download" />
-              Export CSV
-            </a>
-          ) : undefined
-        }
-      />
-      {countries.error || indicators.error ? (
-        <ErrorState error={countries.error || indicators.error} />
+      <SectionHeading title={countryName} />
+      {indicators.error ? (
+        <ErrorState error={indicators.error} />
       ) : (
         <div className="filter-bar">
-          <CountrySelect
-            countries={countries.data?.items || []}
-            value={country}
-            onChange={setCountry}
-          />
           <label className="field">
             Indicator
             <select
@@ -91,6 +74,16 @@ export function Explorer() {
               onChange={(e) => setEnd(Number(e.target.value))}
             />
           </label>
+          {valid && (
+            <a
+              className="button secondary"
+              href={`/api/countries/${country}/indicators.csv?${params}`}
+              download
+            >
+              <Icon name="download" />
+              Export CSV
+            </a>
+          )}
         </div>
       )}
       {!valid && (
@@ -98,9 +91,7 @@ export function Explorer() {
           Choose an ordered year range between 1960 and 2100.
         </div>
       )}
-      {!country ? (
-        <Empty title="Select country" />
-      ) : !valid ? null : data.isPending ? (
+      {!valid ? null : data.isPending ? (
         <Loading />
       ) : data.error ? (
         <ErrorState error={data.error} />

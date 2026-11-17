@@ -1,30 +1,27 @@
-import { useState } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
-import { useCountries, useIndicators, useObservations } from '../hooks/useData'
+import { useState, type ReactNode } from 'react'
+import { useIndicators, useObservations } from '../hooks/useData'
 import {
-  CountrySelect,
-  Empty,
   ErrorState,
   formatNumber,
   Loading,
-  ModelUnavailable,
   ObservationTable,
-  PageHeading,
+  SectionHeading,
   Panel,
 } from '../components/UI'
 import { TrendChart } from '../components/TrendChart'
 
-export function CountryAnalysis() {
-  const { iso3: rawIso3 = '' } = useParams()
-  const iso3 = rawIso3.toUpperCase()
-  const navigate = useNavigate()
-  const countries = useCountries()
+export function CountryAnalysis({
+  country,
+  iso3,
+  reportLink,
+}: {
+  country: string
+  iso3: string
+  reportLink: ReactNode
+}) {
   const indicators = useIndicators()
   const [indicator, setIndicator] = useState('NY.GDP.MKTP.KD.ZG')
   const data = useObservations(iso3)
-  const country = countries.data?.items.find((c) => c.iso3 === iso3)
-  if (countries.isPending) return <Loading />
-  if (countries.error) return <ErrorState error={countries.error} />
   const latest = new Map<
     string,
     NonNullable<typeof data.data>['items'][number]
@@ -33,28 +30,8 @@ export function CountryAnalysis() {
     if (item.value !== null) latest.set(item.indicator_code, item)
   return (
     <>
-      <PageHeading
-        title={country?.name || 'Country fundamentals'}
-        action={
-          iso3 ? (
-            <Link className="button secondary" to={`/reports?country=${iso3}`}>
-              Report
-            </Link>
-          ) : undefined
-        }
-      />
-      <div className="filter-bar">
-        <CountrySelect
-          countries={countries.data?.items || []}
-          value={iso3}
-          onChange={(value) =>
-            navigate(value ? `/countries/${value}` : '/countries')
-          }
-        />
-      </div>
-      {!iso3 ? (
-        <Empty title="Select country" />
-      ) : data.isPending ? (
+      <SectionHeading title={country} action={reportLink} />
+      {data.isPending ? (
         <Loading />
       ) : data.error ? (
         <ErrorState error={data.error} />
@@ -72,9 +49,8 @@ export function CountryAnalysis() {
             ))}
           </div>
           <div className="notice">
-            Latest available non-null values are shown above. Years may differ;
-            later missing values remain visible in the table. Debt, reserves,
-            governance, and corruption series have not yet been integrated.
+            Cards show the latest reported value for each indicator. See the
+            table for observation years, missing values, and sources.
           </div>
           <Panel
             title="History"
@@ -99,9 +75,6 @@ export function CountryAnalysis() {
                 (item) => item.indicator_code === indicator,
               )}
             />
-          </Panel>
-          <Panel title="Sovereign risk prediction">
-            <ModelUnavailable />
           </Panel>
           <Panel
             title="Data & provenance"

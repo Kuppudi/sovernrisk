@@ -2,7 +2,7 @@
 
 React, TypeScript, Vite, and Tailwind.
 
-The first page focuses on ML sovereign risk. Scores stay unavailable until a validated model is connected. Economic indicators are a separate map view and are never presented as risk scores or repayment probabilities.
+The dashboard shows the economic indicator map alongside the sovereign risk assessment. Scores stay unavailable until a validated model is connected. The country filter also drives the fundamentals, reports, and data explorer sections. Country comparison has its own multi-country selector.
 
 ## Run
 
@@ -24,7 +24,8 @@ bash startup.sh
 
 ## Files
 
-- `src/pages/MapExplorer.tsx`: risk and indicator views, country selection.
+- `src/pages/Dashboard.tsx`: shared country selection and dashboard sections.
+- `src/pages/MapExplorer.tsx`: map filters, indicator values, and the selected country summary.
 - `src/components/RiskAssessment.tsx`: model status and unavailable score state.
 - `src/components/WorldMap.tsx`: country outlines and map interaction.
 - `src/components/CountryPreview.tsx`: selected economic indicator and history.

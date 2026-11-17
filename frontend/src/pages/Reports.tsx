@@ -1,68 +1,43 @@
-import { useSearchParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
-import { useCountries } from '../hooks/useData'
 import { request } from '../services/api'
 import type { Report } from '../types/api'
 import {
-  CountrySelect,
-  Empty,
   ErrorState,
   formatDate,
   Icon,
   Loading,
   ModelUnavailable,
   ObservationTable,
-  PageHeading,
+  SectionHeading,
   Panel,
 } from '../components/UI'
 
-export function Reports() {
-  const countries = useCountries()
-  const [params, setParams] = useSearchParams()
-  const country = params.get('country') || ''
+export function Reports({ country }: { country: string }) {
   const report = useQuery({
     queryKey: ['report', country],
-    enabled: Boolean(country),
     queryFn: () =>
       request<Report>(`/api/countries/${encodeURIComponent(country)}/report`),
   })
   return (
     <>
-      <PageHeading
-        title={
-          report.data
-            ? `${report.data.country.name} · Country report`
-            : 'Country reports'
-        }
-        action={
-          report.data ? (
-            <button
-              className="button secondary print-hide"
-              onClick={() => window.print()}
-            >
-              <Icon name="download" />
-              Print / save PDF
-            </button>
-          ) : undefined
-        }
-      />
-      <div className="filter-bar print-hide">
-        <CountrySelect
-          countries={countries.data?.items || []}
-          value={country}
-          onChange={(value) => setParams(value ? { country: value } : {})}
-        />
-      </div>
-      {countries.error ? (
-        <ErrorState error={countries.error} />
-      ) : !country ? (
-        <Empty title="Select country" />
-      ) : report.isPending ? (
+      {report.isPending ? (
         <Loading />
       ) : report.error ? (
         <ErrorState error={report.error} />
       ) : report.data ? (
-        <>
+        <article className="country-report">
+          <SectionHeading
+            title={`${report.data.country.name} · Country report`}
+            action={
+              <button
+                className="button secondary print-hide"
+                onClick={() => window.print()}
+              >
+                <Icon name="download" />
+                Print / save PDF
+              </button>
+            }
+          />
           <div className="report-meta">
             {report.data.country.iso3} · {report.data.country.region} ·{' '}
             {report.data.country.income_group}
@@ -96,7 +71,7 @@ export function Reports() {
               provided.
             </p>
           </Panel>
-        </>
+        </article>
       ) : null}
     </>
   )

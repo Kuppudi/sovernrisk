@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom'
+import type { ReactNode } from 'react'
 import { useObservations } from '../hooks/useData'
 import {
   formatIndicatorValue,
@@ -7,16 +7,18 @@ import {
 import type { MapPlace } from '../services/mapData'
 import type { Indicator, MapCountry } from '../types/api'
 import { TrendChart } from './TrendChart'
-import { ErrorState, formatDate, Icon, Loading } from './UI'
+import { ErrorState, formatDate, Loading } from './UI'
 
 interface CountryPreviewProps {
-  place: MapPlace | null
+  place: MapPlace
   country: MapCountry | undefined
   indicator: string
   metadata?: Indicator
   sourceName?: string
   sourceUrl?: string
   year: number
+  loading: boolean
+  detailsLink: ReactNode
 }
 
 export function CountryPreview({
@@ -27,21 +29,11 @@ export function CountryPreview({
   sourceName,
   sourceUrl,
   year,
+  loading,
+  detailsLink,
 }: CountryPreviewProps) {
   const history = useObservations(country?.iso3 || '', `indicator=${indicator}`)
   const label = getIndicatorLabel(indicator, metadata)
-
-  if (!place) {
-    return (
-      <aside className="country-preview country-preview-empty">
-        <span className="preview-globe">
-          <Icon name="globe" size={30} />
-        </span>
-        <h2>Country</h2>
-        <p>Select country</p>
-      </aside>
-    )
-  }
 
   return (
     <aside
@@ -51,19 +43,19 @@ export function CountryPreview({
     >
       <div className="preview-heading">
         <h2>{country?.name || place.name}</h2>
-        <p>{country?.region || 'No data'}</p>
+        {country?.region && <p>{country.region}</p>}
       </div>
       <div className="preview-value">
         <strong>
-          {formatIndicatorValue(country?.value ?? null, indicator, metadata?.unit)}
+          {loading
+            ? 'Loading…'
+            : formatIndicatorValue(country?.value ?? null, indicator, metadata?.unit)}
         </strong>
         <span>
           {label.name} · {year}
         </span>
       </div>
-      {!country || country.value === null ? (
-        <p className="preview-missing">No data · {year}</p>
-      ) : null}
+      {detailsLink}
       {country ? (
         <>
           <div className="preview-trend">
@@ -77,13 +69,6 @@ export function CountryPreview({
           ) : (
             <TrendChart observations={history.data?.items || []} height={190} />
           )}
-          <Link
-            to={`/countries/${country.iso3}`}
-            className="button preview-details"
-          >
-            Details
-            <Icon name="arrow" size={16} />
-          </Link>
           <details className="preview-source">
             <summary>Source</summary>
             <p>{sourceUrl ? <a href={sourceUrl} target="_blank" rel="noreferrer">{sourceName}</a> : sourceName}</p>
@@ -101,9 +86,7 @@ export function CountryPreview({
             )}
           </details>
         </>
-      ) : (
-        <p className="preview-missing">Not imported</p>
-      )}
+      ) : null}
     </aside>
   )
 }

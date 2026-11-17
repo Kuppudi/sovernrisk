@@ -1,6 +1,6 @@
 import { Component, type ErrorInfo, type ReactNode } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
-import type { Country, Observation } from '../types/api'
+import type { Observation } from '../types/api'
 
 export const formatNumber = (value: number | null, digits = 2) =>
   value === null
@@ -84,7 +84,7 @@ export function Icon({
   )
 }
 
-export function PageHeading({
+export function SectionHeading({
   title,
   action,
 }: {
@@ -92,10 +92,8 @@ export function PageHeading({
   action?: ReactNode
 }) {
   return (
-    <div className="page-heading">
-      <div>
-        <h1>{title}</h1>
-      </div>
+    <div className="section-heading">
+      <h3>{title}</h3>
       {action}
     </div>
   )
@@ -114,7 +112,7 @@ export function Panel({
   return (
     <section className={`panel ${className}`}>
       <div className="panel-heading">
-        <h2>{title}</h2>
+        <h3>{title}</h3>
         {subtitle && <p>{subtitle}</p>}
       </div>
       {children}
@@ -161,35 +159,6 @@ export function ErrorState({ error }: { error: Error | null }) {
         Try again
       </button>
     </div>
-  )
-}
-export function CountrySelect({
-  countries,
-  value,
-  onChange,
-  label = 'Country',
-}: {
-  countries: Country[]
-  value: string
-  onChange: (value: string) => void
-  label?: string
-}) {
-  return (
-    <label className="field">
-      {label}
-      <select
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        disabled={!countries.length}
-      >
-        <option value="">Select a country</option>
-        {countries.map((c) => (
-          <option key={c.iso3} value={c.iso3}>
-            {c.name} · {c.iso3}
-          </option>
-        ))}
-      </select>
-    </label>
   )
 }
 export function ModelUnavailable() {
