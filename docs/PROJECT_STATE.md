@@ -1,5 +1,37 @@
 # Project state · 2026-11-17
 
+## Latest feature · Laptop training and hosted research results
+
+Pulled `45814f7`, which fixes default-risk routing to `/api/data/map` instead
+of the World Bank endpoint. A frontend regression test now checks the actual
+request paths and probability formatting.
+
+The user chose local Windows training with results displayed in the existing
+Azure-hosted frontend. `ml.run_training` can download WDI/label inputs, train
+locally and export a validated `frontend_predictions.json`. The explicit
+`ml.prediction_bundle publish` command archives a version and uploads current
+results into an existing private Blob container using the developer's Azure CLI
+identity. No training job or SQL writes are required for this flow.
+
+When `PREDICTIONS_BLOB_URL` is configured, model status, risk map and country
+prediction reads use the Blob bundle with Azure Identity and one-minute caching.
+The map/card show percentages and the historical outcome year. The card marks
+results Historical research. Ineligible/missing countries remain unavailable.
+Other storage paths still use SQL. Full Blob/Cosmos migration and validated
+current forecasting remain incomplete. AI / RAG stays Coming soon.
+
+`docs/LOCAL_TRAINING.md` contains native PowerShell commands, existing-resource
+permissions/configuration and separate manual activation steps. Source preparation
+does not deploy the app or configure/upload cloud data. The packaging tests now
+use isolated database fixtures for the database-backed model status route.
+
+Verification: 46 focused Python checks passed, the frontend route/percentage
+test passed, and the TypeScript/Vite build passed. A local run against existing
+real inputs exported 395 historical predictions with 217 economy records and
+latest outcome year 2025. This was verified on the Mac, not the Windows laptop.
+ML CI now also exercises the isolated pipeline/export tests on Windows. No
+Azure upload, configuration change or deployment was performed for this work.
+
 ## Current handoff · ML starter and Azure storage direction
 
 The user requested source delivery for Windows VS Code/Copilot and explicitly

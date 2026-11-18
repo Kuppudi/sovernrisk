@@ -171,6 +171,13 @@ When resources or relationships change:
 
 ## Known migration boundary
 
+The local-training feature adds an optional narrow Blob prediction adapter.
+`ml.run_training` runs on the Windows laptop and exports a JSON result bundle;
+an explicit publish command uploads it to existing private storage. App Service
+can read it with managed identity when `PREDICTIONS_BLOB_URL` is configured.
+See `docs/LOCAL_TRAINING.md`. This code path does not establish that Blob serving
+is activated in Azure, and it does not migrate the remaining SQL/report storage.
+
 The source delivery currently has:
 
 - Active PostgreSQL/SQLAlchemy storage

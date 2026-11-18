@@ -215,7 +215,6 @@ def model_unavailable():
 
 @router.get("/api/countries/{iso3}/prediction", response_model=PredictionOut, tags=["Models"])
 def prediction(iso3: ISO3, db: Db):
-    require_country(db, iso3)
     return get_country_prediction(db, iso3)
 
 

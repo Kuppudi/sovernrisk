@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { isWorldBankIndicator, request } from '../services/api'
+import { ApiError, isWorldBankIndicator, request } from '../services/api'
 import { loadMapData, loadWorldShapes } from '../services/mapData'
 import type {
   CountryPage,
@@ -38,6 +38,7 @@ export const useModels = () =>
   useQuery({
     queryKey: ['models'],
     queryFn: () => request<ModelStatus>('/api/models/status'),
+    refetchInterval: 60_000,
   })
 
 export const usePrediction = (iso3: string) =>
@@ -45,6 +46,8 @@ export const usePrediction = (iso3: string) =>
     queryKey: ['prediction', iso3],
     enabled: Boolean(iso3),
     queryFn: () => request<Prediction>(`/api/countries/${encodeURIComponent(iso3)}/prediction`),
+    refetchInterval: 60_000,
+    retry: (failures, error) => !(error instanceof ApiError && error.status === 404) && failures < 2,
   })
 export function useObservations(iso3: string, params = '') {
   const filters = new URLSearchParams(params)
@@ -65,6 +68,8 @@ export function useMapData(indicator: string, year: number, enabled: boolean) {
     queryKey: ['map-data', indicator, year],
     queryFn: () => loadMapData(indicator, year),
     enabled,
+    refetchInterval: indicator === 'default-risk' ? 60_000 : false,
+    retry: (failures, error) => !(error instanceof ApiError && ['MODEL_NOT_TRAINED', 'PREDICTIONS_EMPTY'].includes(error.code)) && failures < 2,
   })
 }
 

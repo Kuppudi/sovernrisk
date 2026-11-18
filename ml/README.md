@@ -1,5 +1,11 @@
 # Sovereign default-onset ML starter
 
+For the current laptop-to-hosted-frontend workflow, follow
+[local training and Blob results](../docs/LOCAL_TRAINING.md). `ml.run_training`
+downloads inputs and trains on the laptop; publishing the resulting JSON file
+is a separate command. Azure ML compute and database access are unnecessary
+for that path.
+
 The default-onset experiment uses a global World Bank WDI snapshot and the
 2026 BoC–BoE sovereign default workbook. It predicts whether conventional
 debt in default becomes positive in the following calendar year among

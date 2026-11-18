@@ -106,7 +106,13 @@ def test_notebook_trains_and_exports_only_research_outputs(tmp_path, monkeypatch
     write_workbook(workbook, stocks)
     snapshot.write_text(json.dumps({
         "dataset_version": "synthetic-notebook-version",
-        "manifest": {"observations": observations},
+        "manifest": {
+            "observations": observations,
+            "countries": [
+                {"iso3": code, "name": f"Synthetic {code}", "region": "Test", "income_group": "Test"}
+                for code in ("AAA", "BBB", "CCC", "DDD", "EEE", "FFF")
+            ],
+        },
     }))
     monkeypatch.setenv("WDI_SNAPSHOT", str(snapshot))
     monkeypatch.setenv("DEFAULT_WORKBOOK", str(workbook))
@@ -133,3 +139,10 @@ def test_notebook_trains_and_exports_only_research_outputs(tmp_path, monkeypatch
     assert set(report["validation"]) == {"event_rate", "logistic_regression", "gradient_boosting"}
     assert artifact["metadata"] == report
     assert len(artifact["estimator"].predict_proba(pd.DataFrame([dict.fromkeys(FEATURES, 1)]))) == 1
+    from ml.prediction_bundle import export_bundle
+    from backend.app.schemas.prediction_bundle import PredictionBundle
+
+    exported = PredictionBundle.model_validate_json(export_bundle(snapshot, output).read_bytes())
+    assert len(exported.predictions) == len(predictions)
+    assert exported.predictions[0].model_version == exported.model_version
+    assert max(row.outcome_year for row in exported.predictions) == 2025

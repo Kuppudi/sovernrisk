@@ -114,16 +114,21 @@ class ModelStatus(BaseModel):
     downgrade_model: str = "Model Not Trained"
     predictions_available: int = 0
     reason: str = "Validated default-risk and downgrade predictions are not configured."
+    research_only: bool = True
+    outcome_year: int | None = None
 
 
 class PredictionOut(BaseModel):
     country_iso3: str
     as_of_date: date
-    risk_score: float | None
+    risk_score: float | None = Field(ge=0, le=1, allow_inf_nan=False)
     downgrade_probability_12m: float | None
     model_version: str
     generated_at: datetime
     data_snapshot_id: str
+    research_only: bool = True
+    outcome_year: int | None = None
+    feature_year: int | None = None
 
 
 class Freshness(BaseModel):
@@ -169,3 +174,4 @@ class MapDataOut(BaseModel):
     countries: list[MapCountryOut]
     source_name: str
     source_url: str
+    research_only: bool = False

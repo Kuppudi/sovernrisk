@@ -4,6 +4,7 @@ import { WorldMap } from '../components/WorldMap'
 import { ErrorState, Loading } from '../components/UI'
 import { useCountries, useIndicators, useMapData, useWorldShapes } from '../hooks/useData'
 import { getCountryChoices } from '../services/mapData'
+import { ApiError } from '../services/api'
 
 const gdpIndicator = 'NY.GDP.MKTP.KD.ZG'
 
@@ -26,7 +27,8 @@ export function MapExplorer({ country, onCountryChange }: {
   const displayedCountries = isRisk
     ? riskMap.data?.countries || availableCountries.map((place) => ({ iso3: place.iso3, value: null }))
     : mapData.data?.countries || []
-  const error = countries.error || shapes.error || indicators.error || (isRisk ? riskMap.error : mapData.error)
+  const riskUnavailable = riskMap.error instanceof ApiError && ['MODEL_NOT_TRAINED', 'PREDICTIONS_EMPTY'].includes(riskMap.error.code)
+  const error = countries.error || shapes.error || indicators.error || (isRisk ? (riskUnavailable ? null : riskMap.error) : mapData.error)
   const pending = shapes.isPending || countries.isPending || indicators.isPending || (isRisk ? riskMap.isPending : mapData.isPending)
 
   return (
@@ -40,7 +42,7 @@ export function MapExplorer({ country, onCountryChange }: {
             countries={displayedCountries}
             indicator={isRisk ? 'default-risk' : gdpIndicator}
             unit={isRisk ? undefined : '% annual growth'}
-            year={isRisk ? undefined : year}
+            year={isRisk ? riskMap.data?.year : year}
             mapLabel={isRisk ? 'Debt default risk map' : 'GDP growth map'}
             emptyLabel={isRisk ? (riskMap.isPending ? 'Loading risk data…' : 'Default-risk scores unavailable') : mapData.isPending ? 'Loading GDP data…' : 'No reported values for this year'}
             missingLabel={isRisk ? 'Unavailable' : 'No data'}
