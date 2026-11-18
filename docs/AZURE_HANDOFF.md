@@ -12,6 +12,11 @@ later training environment; the broader storage migration below is still planned
 Confirmed storage mapping: `sovernriskai` is the data lake, and `sovernriskaiv1`
 is Blob storage. Use `sovernriskaiv1` for the prediction result bundle.
 
+The user currently lacks Blob Contributor access. The immediate delivery path
+packages the local prediction JSON with the App Service release using
+`--predictions-file`, as described in `LOCAL_TRAINING.md`. It uses the existing
+authorized deployment channel and needs no storage role assignment.
+
 ## Azure service plan
 
 | Service | Purpose | Stage |

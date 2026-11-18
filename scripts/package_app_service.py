@@ -16,9 +16,29 @@ APP_FILES = (
     "alembic.ini",
     "startup.sh",
 )
+BUNDLED_PREDICTIONS_PATH = "backend/app/data/frontend_predictions.json"
 
 
-def create_package(project: Path, output: Path) -> None:
+def prediction_payload(path: Path) -> bytes:
+    # Keep ordinary CI packaging standard-library-only. The optional result
+    # path is used from the training environment, where app dependencies exist.
+    import sys
+
+    if str(PROJECT_ROOT) not in sys.path:
+        sys.path.insert(0, str(PROJECT_ROOT))
+    from backend.app.schemas.prediction_bundle import PredictionBundle
+
+    with path.open("rb") as stream:
+        content = stream.read(10 * 1024 * 1024 + 1)
+    if len(content) > 10 * 1024 * 1024:
+        raise ValueError("Prediction bundle exceeds size limit")
+    bundle = PredictionBundle.model_validate_json(content)
+    # Serialize the allowed fields, excluding unknown nested input properties.
+    return bundle.model_dump_json().encode("utf-8")
+
+
+def create_package(project: Path, output: Path, predictions_file: Path | None = None) -> None:
+    results = prediction_payload(predictions_file) if predictions_file is not None else None
     for folder in APP_FOLDERS:
         if output.resolve().is_relative_to((project / folder).resolve()):
             raise ValueError(
@@ -40,6 +60,8 @@ def create_package(project: Path, output: Path) -> None:
             if not path.is_file():
                 continue
             relative = path.relative_to(project)
+            if relative.as_posix() == BUNDLED_PREDICTIONS_PATH:
+                continue  # Results enter a release only through the explicit flag.
             if "__pycache__" in relative.parts or any(
                 part.startswith(".") for part in relative.parts
             ):
@@ -61,6 +83,8 @@ def create_package(project: Path, output: Path) -> None:
     with ZipFile(output, "w", compression=ZIP_DEFLATED) as archive:
         for path in files:
             archive.write(path, arcname=path.relative_to(project).as_posix())
+        if results is not None:
+            archive.writestr(BUNDLED_PREDICTIONS_PATH, results)
 
 
 def main() -> None:
@@ -68,12 +92,18 @@ def main() -> None:
     parser.add_argument(
         "--output", type=Path, default=PROJECT_ROOT / "dist" / "app-service.zip"
     )
+    parser.add_argument(
+        "--predictions-file", type=Path,
+        help="Include vetted frontend_predictions.json from local training in this release.",
+    )
     args = parser.parse_args()
     try:
-        create_package(PROJECT_ROOT, args.output)
-    except ValueError as error:
+        create_package(PROJECT_ROOT, args.output, args.predictions_file)
+    except (ValueError, OSError) as error:
         parser.exit(1, f"{error}\n")
     print(f"App Service package: {args.output}")
+    if args.predictions_file is not None:
+        print("Included historical research results. Blob access is not required to serve them.")
 
 
 if __name__ == "__main__":

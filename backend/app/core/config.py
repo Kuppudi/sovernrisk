@@ -16,6 +16,7 @@ class Settings(BaseSettings):
     raw_data_dir: Path = Path("data/raw")
     report_data_dir: Path = Path("data/reports")
     predictions_blob_url: str = ""
+    predictions_file: str = ""
     azure_openai_endpoint: str = ""
     azure_openai_deployment: str = ""
     azure_openai_api_key: SecretStr = SecretStr("")

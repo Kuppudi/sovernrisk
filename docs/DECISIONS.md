@@ -1,5 +1,26 @@
 # Architecture decisions
 
+## 2026-11-18 · Prediction file in the App Service release
+
+The user lacks Blob Contributor access and already has an App Service release
+path. Support including a validated research result JSON in the deployment ZIP.
+The file is discovered automatically and takes precedence over Blob settings;
+an explicit `PREDICTIONS_FILE` override has highest priority. Invalid configured
+files fail clearly rather than silently switching to old results or a new store.
+
+Keep packaging opt-in through `--predictions-file`. Normal GitHub source builds
+cannot include ignored outputs on the laptop. Deploy the locally built ZIP using
+the existing authorized release channel. This requires App Service deployment
+access and grants no new storage permissions. Preserve research/year labels,
+exclude model binaries/raw data, and retain Blob as an optional alternative.
+
+For the user's existing GitHub deployment channel, accept a reviewed result JSON
+as a Release asset selected by an explicit tag input on the manual workflow.
+Download only `frontend_predictions.json` from this repository and validate it
+before packaging. Use the workflow's existing deployment identity. Keep release
+creation, data upload and workflow dispatch as explicit user actions; no Azure
+role assignment to the laptop identity is required by this path.
+
 ## 2026-11-17 · Local training, Blob result delivery
 
 The user selected Windows laptop training and the existing Azure-hosted frontend.
