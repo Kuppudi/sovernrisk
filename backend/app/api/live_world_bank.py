@@ -2,10 +2,12 @@ import csv
 import io
 from typing import Annotated
 
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Depends, Query
 from fastapi.responses import Response
 from pydantic import Field
+from sqlalchemy.orm import Session
 
+from backend.app.db.session import get_db
 from backend.app.schemas.api import (
     ISO3,
     CompareRequest,
@@ -21,6 +23,7 @@ from backend.app.schemas.api import (
     YearFilter,
 )
 from backend.app.models.entities import now
+from backend.app.services.predictions import get_default_risk_map
 from backend.app.services.reports import write_summary
 from backend.app.services import live_world_bank as live
 from backend.app.services.exports import protect_spreadsheet_text
@@ -57,9 +60,13 @@ def indicators():
 
 @router.get("/map", response_model=MapDataOut)
 def world_map(
+    db: Annotated[Session, Depends(get_db)],
     indicator: str = Query(min_length=1, max_length=100),
     year: int = Query(ge=2015, le=2025),
 ):
+    if indicator == "default-risk":
+        return get_default_risk_map(db, year)
+
     bucket = live.cache_bucket()
     places, definitions = live.catalog(bucket)
     rows = live.observations(
