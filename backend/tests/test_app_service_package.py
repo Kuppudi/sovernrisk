@@ -103,6 +103,14 @@ def test_package_auto_includes_committed_results(project, bundle_data):
         create_package(project, output)
 
 
+def test_invalid_prediction_filename_is_rejected(project, bundle_data):
+    path = project / "deploy" / "frontend_prediction.json"
+    path.parent.mkdir()
+    path.write_text(json.dumps(bundle_data))
+    with pytest.raises(ValueError, match="Rename deploy/frontend_prediction.json"):
+        create_package(project, project / "dist" / "app-service.zip")
+
+
 def test_invalid_prediction_file_preserves_previous_release(project):
     path = project / "invalid.json"
     path.write_text('{"invalid":true}')

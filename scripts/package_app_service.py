@@ -40,6 +40,10 @@ def prediction_payload(path: Path) -> bytes:
 
 def create_package(project: Path, output: Path, predictions_file: Path | None = None) -> None:
     if predictions_file is None:
+        if (project / "deploy/frontend_prediction.json").exists():
+            raise ValueError(
+                "Rename deploy/frontend_prediction.json to deploy/frontend_predictions.json so the results are included."
+            )
         candidate = project / REPOSITORY_PREDICTIONS_PATH
         if candidate.is_symlink():
             raise ValueError("Repository prediction JSON must be a regular file, not a symlink")
