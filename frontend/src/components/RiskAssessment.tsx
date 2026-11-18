@@ -1,4 +1,4 @@
-import { useModels } from '../hooks/useData'
+import { useModels, usePrediction } from '../hooks/useData'
 import { formatIndicatorValue } from '../services/indicatorLabels'
 import type { MapPlace } from '../services/mapData'
 
@@ -15,9 +15,13 @@ interface RiskAssessmentProps {
 
 export function RiskAssessment({ country, mode, onModeChange, gdpGrowth, gdpLoading, year }: RiskAssessmentProps) {
   const model = useModels()
+  const prediction = usePrediction(country?.iso3 || '')
   const isRisk = mode === 'risk'
+  const riskValue = prediction.data?.risk_score == null
+    ? 'Unavailable'
+    : `${(prediction.data.risk_score * 100).toFixed(1)}%`
   const value = isRisk
-    ? model.isPending ? 'Loading…' : 'Unavailable'
+    ? model.isPending || prediction.isPending ? 'Loading…' : riskValue
     : gdpLoading ? 'Loading…' : country ? formatIndicatorValue(gdpGrowth, 'NY.GDP.MKTP.KD.ZG') : '—'
 
   return (

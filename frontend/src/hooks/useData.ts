@@ -6,6 +6,7 @@ import type {
   Freshness,
   Indicator,
   ModelStatus,
+  Prediction,
   ObservationPage,
 } from '../types/api'
 
@@ -37,6 +38,13 @@ export const useModels = () =>
   useQuery({
     queryKey: ['models'],
     queryFn: () => request<ModelStatus>('/api/models/status'),
+  })
+
+export const usePrediction = (iso3: string) =>
+  useQuery({
+    queryKey: ['prediction', iso3],
+    enabled: Boolean(iso3),
+    queryFn: () => request<Prediction>(`/api/countries/${encodeURIComponent(iso3)}/prediction`),
   })
 export function useObservations(iso3: string, params = '') {
   const filters = new URLSearchParams(params)

@@ -109,11 +109,21 @@ class PredictRequest(BaseModel):
 
 
 class ModelStatus(BaseModel):
-    status: Literal["unavailable"] = "unavailable"
+    status: Literal["unavailable", "available"] = "unavailable"
     risk_model: str = "Model Not Trained"
     downgrade_model: str = "Model Not Trained"
     predictions_available: int = 0
     reason: str = "Validated default-risk and downgrade predictions are not configured."
+
+
+class PredictionOut(BaseModel):
+    country_iso3: str
+    as_of_date: date
+    risk_score: float | None
+    downgrade_probability_12m: float | None
+    model_version: str
+    generated_at: datetime
+    data_snapshot_id: str
 
 
 class Freshness(BaseModel):

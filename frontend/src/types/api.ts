@@ -57,11 +57,21 @@ export interface DataCoverage {
   missing_count: number
 }
 export interface ModelStatus {
-  status: 'unavailable'
+  status: 'unavailable' | 'available'
   risk_model: string
   downgrade_model: string
   predictions_available: number
   reason: string
+}
+
+export interface Prediction {
+  country_iso3: string
+  as_of_date: string
+  risk_score: number | null
+  downgrade_probability_12m: number | null
+  model_version: string
+  generated_at: string
+  data_snapshot_id: string
 }
 export interface Report {
   country: Country

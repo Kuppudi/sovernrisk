@@ -18,15 +18,16 @@ export function MapExplorer({ country, onCountryChange }: {
   const year = 2025
   const availableCountries = countries.data?.items || []
   const mapData = useMapData(gdpIndicator, year, mode === 'gdp' && Boolean(indicators.data?.length))
+  const riskMap = useMapData('default-risk', year, mode === 'risk' && Boolean(countries.data?.items?.length))
   const availablePlaces = getCountryChoices(shapes.data, availableCountries)
   const selectedPlace = availablePlaces.find((place) => place.iso3 === country)
   const selectedGdp = mapData.data?.countries.find((item) => item.iso3 === country)
   const isRisk = mode === 'risk'
   const displayedCountries = isRisk
-    ? availableCountries.map((place) => ({ iso3: place.iso3, value: null }))
+    ? riskMap.data?.countries || availableCountries.map((place) => ({ iso3: place.iso3, value: null }))
     : mapData.data?.countries || []
-  const error = countries.error || shapes.error || indicators.error || (!isRisk && mapData.error)
-  const pending = shapes.isPending || countries.isPending || indicators.isPending
+  const error = countries.error || shapes.error || indicators.error || (isRisk ? riskMap.error : mapData.error)
+  const pending = shapes.isPending || countries.isPending || indicators.isPending || (isRisk ? riskMap.isPending : mapData.isPending)
 
   return (
     <div className="dashboard-map-layout">
@@ -41,7 +42,7 @@ export function MapExplorer({ country, onCountryChange }: {
             unit={isRisk ? undefined : '% annual growth'}
             year={isRisk ? undefined : year}
             mapLabel={isRisk ? 'Debt default risk map' : 'GDP growth map'}
-            emptyLabel={isRisk ? 'Default-risk scores unavailable' : mapData.isPending ? 'Loading GDP data…' : 'No reported values for this year'}
+            emptyLabel={isRisk ? (riskMap.isPending ? 'Loading risk data…' : 'Default-risk scores unavailable') : mapData.isPending ? 'Loading GDP data…' : 'No reported values for this year'}
             missingLabel={isRisk ? 'Unavailable' : 'No data'}
             selectedCountry={country || null}
             onSelectCountry={(place) => onCountryChange(place.iso3)}

@@ -1,5 +1,20 @@
 # World Bank data engineering notebook
 
+## Azure ML Studio first workflow (no local files)
+
+If you want to run training entirely in Azure ML Studio and avoid local workstation
+files, open `notebooks/azureml_default_training.ipynb` in the Azure ML notebook UI.
+That notebook will:
+
+1. Install project ML dependencies in the AML kernel.
+2. Pull global WDI archives directly from the World Bank API for 1990-2025.
+3. Build a training snapshot JSON in notebook storage.
+4. Download the BoC-BoE 2026 default workbook from the official release URL.
+5. Run `ml.default_training` and save `metrics.json`, `research_model.joblib`, and
+	`historical_test_predictions.csv` under `ml/artifacts/default-onset-azureml/`.
+
+This path runs fully on AML compute and does not require local source data files.
+
 Open `data_extract.ipynb` in VS Code, Jupyter, or an existing Azure Machine Learning notebook environment. Use Python 3.12+; Python 3.13 matches CI and App Service. Verify the selected kernel version because existing Azure ML kernels can be older. Keep the repository available to the kernel. From the repository root, install into your selected Python environment:
 
 ```sh

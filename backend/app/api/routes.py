@@ -20,11 +20,17 @@ from backend.app.schemas.api import (
     MapDataOut,
     ModelStatus,
     ObservationPage,
+    PredictionOut,
     PredictRequest,
     ReportOut,
     YearFilter,
 )
 from backend.app.services.map_data import get_map_data
+from backend.app.services.predictions import (
+    get_country_prediction,
+    get_default_risk_map,
+    get_model_status,
+)
 from backend.app.services.exports import build_observation_csv
 from backend.app.services.reports import build_country_report
 from backend.app.services.observations import (
@@ -68,6 +74,8 @@ def world_map(
     indicator: str = Query(min_length=1, max_length=100),
     year: int = Query(ge=1960, le=2100),
 ):
+    if indicator == "default-risk":
+        return get_default_risk_map(db, year)
     return get_map_data(db, indicator, year)
 
 
@@ -195,8 +203,8 @@ def report(iso3: ISO3, db: Db):
 
 
 @router.get("/api/models/status", response_model=ModelStatus, tags=["Models"])
-def model_status():
-    return ModelStatus()
+def model_status(db: Db):
+    return get_model_status(db)
 
 
 def model_unavailable():
@@ -205,10 +213,10 @@ def model_unavailable():
     )
 
 
-@router.get("/api/countries/{iso3}/prediction", tags=["Models"])
+@router.get("/api/countries/{iso3}/prediction", response_model=PredictionOut, tags=["Models"])
 def prediction(iso3: ISO3, db: Db):
     require_country(db, iso3)
-    model_unavailable()
+    return get_country_prediction(db, iso3)
 
 
 @router.post("/api/predict", tags=["Models"])

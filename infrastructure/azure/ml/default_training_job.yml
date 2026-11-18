@@ -1,0 +1,29 @@
+$schema: https://azuremlschemas.azureedge.net/latest/commandJob.schema.json
+
+type: command
+name: vega-default-onset-train-${{name}}
+display_name: vega-default-onset-training
+experiment_name: sovereignrisk-default-onset
+
+code: ../../..
+
+command: >-
+  python -m pip install -e ".[ml]" &&
+  python -m ml.azureml_run_default_training
+  --start-year 1990
+  --end-year 2025
+  --train-through 2013
+  --validate-through 2018
+  --input-root ./data/raw
+  --output-root ./outputs/default-onset
+
+environment:
+  image: mcr.microsoft.com/azureml/openmpi4.1.0-ubuntu22.04:latest
+
+compute: azureml:cpu-cluster
+
+outputs:
+  trained_artifacts:
+    type: uri_folder
+    mode: rw_mount
+    path: azureml://datastores/workspaceblobstore/paths/sovernrisk/ml/default-onset/${{name}}
