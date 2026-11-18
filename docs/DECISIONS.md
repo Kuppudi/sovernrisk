@@ -1,5 +1,20 @@
 # Architecture decisions
 
+## 2026-11-18 · Commit the user's Windows prediction JSON
+
+The user cannot use GitHub Releases and explicitly requested putting the local
+prediction JSON in the repository. Allow exactly
+`deploy/frontend_predictions.json` as the reviewed generated-result exception.
+Use the Windows-generated file; do not substitute a different machine's output.
+Automatically validate and package this path, while retaining the explicit
+`--predictions-file` override for local packaging. Keep other generated data,
+labels, weights and credentials excluded.
+
+Remove the Release-tag input and asset download from the manual App Service
+workflow. The user's source push runs CI; manual deployment then uses the
+existing deployment identity. File discovery and validation apply equally to
+both App Service package workflows. Invalid JSON fails packaging before release.
+
 ## 2026-11-18 · Prediction file in the App Service release
 
 The user lacks Blob Contributor access and already has an App Service release

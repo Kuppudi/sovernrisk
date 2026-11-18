@@ -34,17 +34,16 @@ PostgreSQL, Docker, dashboard-tab and automatic-merge instructions.
   results in the existing Azure-hosted frontend. Use `ml.run_training` to
   download inputs/train/export locally. Follow
   `docs/LOCAL_TRAINING.md`. No Azure ML job is needed for this path.
-- The user lacks Blob Contributor access. Current delivery uses a locally built
-  App Service ZIP with `--predictions-file` to include the existing result JSON.
-  The app discovers that bundled file automatically; no Blob access, new role
-  or extra setting is required. This needs the existing App Service release
-  permission. A source-only GitHub build cannot include ignored laptop files.
-  For the existing GitHub deployment channel, attach frontend_predictions.json
-  to a GitHub Release and select its tag in the manual workflow's
-  predictions_release_tag input. The workflow validates and packages that asset
-  using its existing deployment identity. Do not run deployment automatically.
-  Keep results out of Git, keep the research/year labels, and make release a
-  separate explicit action. Blob publishing is an optional later alternative.
+- The user lacks Blob Contributor access and GitHub Releases are disallowed.
+  The user explicitly authorized committing the Windows prediction JSON at
+  `deploy/frontend_predictions.json`. This is the single exception to generated
+  result exclusion. The package builder validates and automatically includes
+  that file. The app discovers it with no Blob access or extra setting. Keep
+  datasets, label downloads, metrics, model binaries and credentials excluded.
+  Do not substitute predictions generated on another computer. The Windows
+  user copies their existing local output, commits it, pushes and manually
+  deploys the new main commit through the existing App Service workflow.
+  Preserve research/year labels. Blob publishing remains an optional alternative.
 - App Service reads a private result bundle when `PREDICTIONS_BLOB_URL` is set,
   using Azure Identity and a one-minute cache. Those model/map/country reads
   bypass SQL catalogs. Other persisted-data/report paths still use PostgreSQL.
