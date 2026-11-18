@@ -15,6 +15,7 @@ from scripts.package_app_service import (
     APP_FILES,
     APP_FOLDERS,
     BUNDLED_PREDICTIONS_PATH,
+    REPOSITORY_PREDICTIONS_PATH,
     PROJECT_ROOT,
     create_package,
 )
@@ -85,6 +86,23 @@ def test_package_can_include_only_vetted_results(project, bundle_data):
         assert not any(name.endswith(".joblib") or name.startswith("data/") for name in archive.namelist())
 
 
+def test_package_auto_includes_committed_results(project, bundle_data):
+    path = project / REPOSITORY_PREDICTIONS_PATH
+    path.parent.mkdir()
+    path.write_text(json.dumps(bundle_data))
+    (path.parent / "other-local-file.json").write_text('{"must_not_ship": true}')
+    output = project / "dist" / "app-service.zip"
+    create_package(project, output)
+    with ZipFile(output) as archive:
+        included = json.loads(archive.read(BUNDLED_PREDICTIONS_PATH))
+        assert included["model_version"] == "synthetic-model"
+        assert included["predictions"][0]["risk_score"] == 0.125
+        assert not any(name.startswith("deploy/") for name in archive.namelist())
+    path.write_text('{"invalid": true}')
+    with pytest.raises(ValueError):
+        create_package(project, output)
+
+
 def test_invalid_prediction_file_preserves_previous_release(project):
     path = project / "invalid.json"
     path.write_text('{"invalid":true}')
@@ -136,11 +154,13 @@ def test_startup_explains_a_missing_frontend_build(tmp_path):
     reason="Run npm run build first; the App Service CI job does this.",
 )
 @pytest.mark.parametrize("include_predictions", [False, True])
-def test_real_frontend_and_api_run_from_the_extracted_package(tmp_path, bundle_data, include_predictions):
+def test_real_frontend_and_api_run_from_the_extracted_package(tmp_path, bundle_data, include_predictions, monkeypatch):
     output = tmp_path / "app-service.zip"
     results = tmp_path / "results.json" if include_predictions else None
     if results is not None:
         results.write_text(json.dumps(bundle_data))
+    # Ignore any actual committed research data; this check uses synthetic inputs.
+    monkeypatch.setattr("scripts.package_app_service.REPOSITORY_PREDICTIONS_PATH", "deploy/no-test-results.json")
     create_package(PROJECT_ROOT, output, results)
     unpacked = tmp_path / "unpacked"
     with ZipFile(output) as archive:

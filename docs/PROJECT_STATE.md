@@ -1,5 +1,28 @@
 # Project state · 2026-11-18
 
+## Latest delivery choice · Reviewed Windows prediction JSON in Git
+
+GitHub Releases are not permitted in the user's environment. The user authorized
+committing their Windows-generated result JSON to
+`deploy/frontend_predictions.json`. The packager automatically validates and
+includes that one file in the App Service ZIP. The manual deployment workflow
+no longer asks for or downloads a GitHub Release asset. Both packaging workflows
+use the same file discovery, with no Blob upload role required.
+
+No prediction file is supplied from the Mac checkout. The Windows user must copy
+their own `ml/artifacts/default-onset/frontend_predictions.json` to the tracked
+path, commit and push it, then manually deploy the new commit. Other generated
+files, raw datasets, labels, model binaries and credentials remain excluded.
+`deploy/README.md` and `docs/LOCAL_TRAINING.md` contain the commands. Existing
+research labels, outcome years and missing-country handling remain unchanged.
+Source work does not deploy Azure or change data in an Azure storage account.
+
+Verification: 46 focused API/file/packaging checks passed locally. The new test
+confirms automatic inclusion of the committed result path, exclusion of other
+deployment-folder files, and rejection of invalid JSON. Extracted-package tests
+use isolated synthetic results, so CI remains independent of the user's actual
+committed prediction values. Windows/Linux CI also checks this discovery path.
+
 ## Latest feature · Result delivery using App Service deployment access
 
 The user's Windows training succeeded, but Blob publishing failed and the user

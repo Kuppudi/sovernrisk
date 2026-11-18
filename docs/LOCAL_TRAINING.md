@@ -1,7 +1,8 @@
 # Local ML training and hosted prediction results
 
 Run training on the Windows laptop. With no Blob upload role, include the result
-JSON in the App Service deployment ZIP using the explicit packaging option below.
+JSON in the App Service deployment ZIP by committing the reviewed file at
+`deploy/frontend_predictions.json`, or using the explicit local packaging option.
 App Service discovers that file automatically for the map and country card.
 Blob publishing remains an optional alternative when the caller has access.
 Training needs neither Docker nor a database nor an Azure ML compute job.
@@ -20,7 +21,8 @@ the delivery branch while preserving existing work. After it is merged, use main
 
 ```powershell
 git fetch origin
-git switch feature/packaged-predictions
+git switch main
+git pull --ff-only origin main
 py -3.13 -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -r requirements.lock -e ".[ml]"
 ```
@@ -38,7 +40,8 @@ downloads. The frontend's economic display window remains 2015–2025.
 
 Outputs under ignored `ml/artifacts/default-onset/` include `metrics.json`,
 `research_model.joblib`, `historical_test_predictions.csv` and
-`frontend_predictions.json`. Keep source datasets and outputs out of Git.
+`frontend_predictions.json`. Keep source datasets and generated outputs out of
+Git, with the single reviewed JSON copy under `deploy/` as the user-approved exception.
 
 For subsequent runs, reuse the downloaded files:
 
@@ -70,29 +73,40 @@ back to older years.
 
 ## 3. Deploy results without Blob access
 
-### Use the existing GitHub deployment workflow
+### Commit the Windows results and use the existing deployment workflow
 
-After this feature is merged into main, you can continue using the existing
-manual GitHub-to-App-Service workflow:
+GitHub Releases are unavailable in the user's environment. The current path is
+one explicitly reviewed JSON file committed to source. No release asset, Blob
+upload or personal Azure Contributor role is required.
 
-1. In `Kuppudi/sovernrisk` on GitHub, create a Release with a tag such as
-   `predictions-2026-11-18`. Attach the laptop's
-   `ml/artifacts/default-onset/frontend_predictions.json` as a release asset.
-   Publish the release, optionally as a prerelease. The file follows repository
-   visibility; attach only the reviewed country research result JSON.
-2. Open Actions → **Build and deploy Python app to Azure Web App - sovernriskAI**
-   → Run workflow. Select main and enter that tag in
-   **predictions_release_tag**.
-3. Run the workflow. It downloads that exact asset from the same repository,
-   validates the data, and packages it with React/FastAPI. Its existing deployment
-   identity performs the App Service release.
+Use the file generated on the Windows laptop. From that repository's root:
 
-This needs GitHub release permissions and the existing authorized deployment
-channel. Your laptop needs no Azure Blob role or Azure deployment identity.
-No result file is committed to source. Keep selecting a result tag on later
-deployments that should include scores; leaving the input empty produces a
-source-only release without packaged results. A missing/invalid asset fails
-the build before deployment. See [GitHub release downloads](https://cli.github.com/manual/gh_release_download).
+```powershell
+git switch main
+git pull --ff-only origin main
+New-Item -ItemType Directory -Force deploy | Out-Null
+Copy-Item -LiteralPath "ml/artifacts/default-onset/frontend_predictions.json" -Destination "deploy/frontend_predictions.json"
+git add -- deploy/frontend_predictions.json
+git diff --cached --stat -- deploy/frontend_predictions.json
+git commit -m "Update research predictions from Windows training" -- deploy/frontend_predictions.json
+git push origin main
+```
+
+If the source file is missing, complete the local training/export step first.
+If Git reports nothing to commit, that JSON is already up to date. Do not force
+add `ml/artifacts/` or download folders. The allowed tracked file is
+`deploy/frontend_predictions.json`; its contents follow repository visibility.
+
+After CI passes, open Actions → **Build and deploy Python app to Azure Web App -
+sovernriskAI** → Run workflow → main. No release tag is needed. The package builder
+automatically validates the committed JSON and copies it into the application's
+result path. The existing deployment identity releases the package.
+
+A source push runs checks but does not deploy Azure automatically. The model,
+map and country APIs read packaged results automatically after the manual
+release. Repeat copy → commit → push → deploy whenever Windows predictions change.
+The app does not train during startup and does not use a different machine's
+results unless that file is deliberately committed.
 
 ### Alternatively, build and deploy the ZIP from the laptop
 
@@ -110,7 +124,7 @@ Pop-Location
 
 This creates `dist/app-service.zip` with results at
 `backend/app/data/frontend_predictions.json`. It excludes the training inputs,
-model binaries and other generated files. Results remain out of Git.
+model binaries and other generated files. The optional tracked JSON copy is described above; other generated files remain out of Git.
 
 Deploy **this locally built ZIP** using your existing authorized App Service
 deployment method. If your Azure CLI identity has App Service deployment access,
@@ -122,13 +136,14 @@ az webapp deploy --resource-group wbg-poc-rg --name sovernriskAI --src-path "dis
 
 This performs an App Service release. It requires your existing deployment
 permission, with no Blob role assignment, SAS token, storage upload or additional
-app setting. A source-only GitHub build cannot see files on your laptop. Use
-the release-asset workflow above or deploy the ZIP you just built.
+app setting. A GitHub build sees only committed files. Commit the reviewed JSON at the path
+above, or deploy the ZIP you just built.
 
 After release, open `/api/models/status` to verify `available`, then refresh the
 dashboard. Each result update uses a newly built ZIP and an App Service release;
 training can be reused when the existing result file is already correct.
-Standard CI packages made without `--predictions-file` contain no result file.
+Without an explicit flag, the packager uses `deploy/frontend_predictions.json`
+when present. If neither source is supplied, the package has no result file.
 
 Source order is an explicit `PREDICTIONS_FILE` override, the packaged file, then
 `PREDICTIONS_BLOB_URL`, then SQL. Packaged results take precedence over an old

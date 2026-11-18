@@ -17,6 +17,11 @@ packages the local prediction JSON with the App Service release using
 `--predictions-file`, as described in `LOCAL_TRAINING.md`. It uses the existing
 authorized deployment channel and needs no storage role assignment.
 
+GitHub Releases are disallowed. The user now authorizes the reviewed Windows
+JSON at `deploy/frontend_predictions.json` in Git. Packaging automatically
+includes it; see `deploy/README.md` for copy/commit/push instructions. Other
+generated artifacts remain excluded, and Azure deployment remains manual.
+
 ## Azure service plan
 
 | Service | Purpose | Stage |

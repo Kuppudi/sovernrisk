@@ -1,5 +1,9 @@
 # Sovereign Credit Risk Intelligence Platform
 
+For Windows-trained prediction results, follow [the copy/commit/push instructions](deploy/README.md).
+The reviewed JSON at `deploy/frontend_predictions.json` is included automatically
+in the App Service package; deployment remains manual.
+
 A local-first sovereign credit-risk application for lending and insurance analysis, built with React/TypeScript, FastAPI, and PostgreSQL. The first page highlights ML risk assessment; trained models remain unavailable. Official World Bank observations retain their provenance and revisions. **No credit ratings, model scores, repayment probabilities, or downgrade probabilities are fabricated.**
 
 This repository root is the platform root, without a redundant wrapper directory. Read [project state](docs/PROJECT_STATE.md), [decisions](docs/DECISIONS.md), and [Copilot context](.github/copilot-instructions.md) before continuing.

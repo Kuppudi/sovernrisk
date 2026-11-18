@@ -17,6 +17,7 @@ APP_FILES = (
     "startup.sh",
 )
 BUNDLED_PREDICTIONS_PATH = "backend/app/data/frontend_predictions.json"
+REPOSITORY_PREDICTIONS_PATH = "deploy/frontend_predictions.json"
 
 
 def prediction_payload(path: Path) -> bytes:
@@ -38,6 +39,12 @@ def prediction_payload(path: Path) -> bytes:
 
 
 def create_package(project: Path, output: Path, predictions_file: Path | None = None) -> None:
+    if predictions_file is None:
+        candidate = project / REPOSITORY_PREDICTIONS_PATH
+        if candidate.is_symlink():
+            raise ValueError("Repository prediction JSON must be a regular file, not a symlink")
+        if candidate.exists():
+            predictions_file = candidate
     results = prediction_payload(predictions_file) if predictions_file is not None else None
     for folder in APP_FOLDERS:
         if output.resolve().is_relative_to((project / folder).resolve()):
@@ -61,7 +68,7 @@ def create_package(project: Path, output: Path, predictions_file: Path | None = 
                 continue
             relative = path.relative_to(project)
             if relative.as_posix() == BUNDLED_PREDICTIONS_PATH:
-                continue  # Results enter a release only through the explicit flag.
+                continue  # Only the validated, allowlisted result source is packaged.
             if "__pycache__" in relative.parts or any(
                 part.startswith(".") for part in relative.parts
             ):
@@ -102,7 +109,7 @@ def main() -> None:
     except (ValueError, OSError) as error:
         parser.exit(1, f"{error}\n")
     print(f"App Service package: {args.output}")
-    if args.predictions_file is not None:
+    if args.predictions_file is not None or (PROJECT_ROOT / REPOSITORY_PREDICTIONS_PATH).is_file():
         print("Included historical research results. Blob access is not required to serve them.")
 
 
