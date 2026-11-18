@@ -1,5 +1,24 @@
 # Architecture decisions
 
+## 2026-11-17 · Local training, Blob result delivery
+
+The user selected Windows laptop training and the existing Azure-hosted frontend.
+Run the experiment locally and export a versioned JSON bundle. A separate,
+explicit command uploads results to the existing Blob account. App Service reads
+the bundle using managed identity when `PREDICTIONS_BLOB_URL` is set. Avoid an AML
+job and private PostgreSQL access for this training/result-delivery path.
+
+Keep model binaries on the training side. The API validates JSON probabilities,
+country coverage, duplicate rows and provenance. Upload an archived complete
+bundle before replacing the current result blob. Cache reads for one minute.
+This is a prediction-only Blob adapter; existing SQL storage remains elsewhere.
+
+The current experiment supplies historical held-out probabilities. Keep the
+Historical research label, outcome year, feature lag and model limitations.
+Do not relabel imported backtest rows as live validated forecasts. Current
+prediction delivery requires another explicit forecasting/validation phase.
+Azure publishing/configuration remains a manual action, separate from source work.
+
 ## 2026-11-17 · ML handoff, Blob/Cosmos and source-only delivery
 
 The latest user direction uses the existing App Service, Blob Storage and

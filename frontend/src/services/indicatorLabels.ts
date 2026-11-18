@@ -77,6 +77,7 @@ export function formatIndicatorValue(
   unit?: string,
 ): string {
   if (value === null) return 'No data'
+  if (indicator === 'default-risk') return `${(value * 100).toFixed(1)}%`
 
   const formatted = value.toLocaleString(undefined, {
     maximumFractionDigits: 2,

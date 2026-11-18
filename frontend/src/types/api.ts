@@ -62,6 +62,8 @@ export interface ModelStatus {
   downgrade_model: string
   predictions_available: number
   reason: string
+  research_only: boolean
+  outcome_year: number | null
 }
 
 export interface Prediction {
@@ -72,6 +74,9 @@ export interface Prediction {
   model_version: string
   generated_at: string
   data_snapshot_id: string
+  research_only: boolean
+  outcome_year: number | null
+  feature_year: number | null
 }
 export interface Report {
   country: Country
@@ -101,4 +106,5 @@ export interface MapData {
   countries: MapCountry[]
   source_name: string
   source_url: string
+  research_only: boolean
 }

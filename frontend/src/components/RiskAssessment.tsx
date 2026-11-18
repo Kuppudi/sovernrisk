@@ -33,9 +33,13 @@ export function RiskAssessment({ country, mode, onModeChange, gdpGrowth, gdpLoad
       <div className="risk-card-heading">
         <h2>{isRisk ? 'Debt default risk' : 'GDP growth'}</h2>
       </div>
+      {isRisk && prediction.data?.research_only && (
+        <span className="risk-model-status">Historical research · {prediction.data.outcome_year}</span>
+      )}
       <p className="risk-score">{value}</p>
       <dl className="risk-summary">
         <div><dt>Country</dt><dd>{country?.name || '—'}</dd></div>
+        {isRisk && prediction.data && <div><dt>Outcome year</dt><dd>{prediction.data.outcome_year || '—'}</dd></div>}
         {!isRisk && <div><dt>Year</dt><dd>{year}</dd></div>}
       </dl>
       {isRisk && (

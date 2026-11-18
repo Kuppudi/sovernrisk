@@ -4,6 +4,11 @@ Prepared November 17, 2026. This is an implementation handoff for Windows VS Cod
 with Azure CLI authentication and GitHub over SSH. The current request is for
 instructions. Resource changes and deployment are separate user-controlled steps.
 
+The latest execution choice is training on the Windows laptop and publishing
+research result JSON for the existing hosted frontend. Follow
+[local training](LOCAL_TRAINING.md) for that path. Azure ML remains an optional
+later training environment; the broader storage migration below is still planned.
+
 ## Azure service plan
 
 | Service | Purpose | Stage |

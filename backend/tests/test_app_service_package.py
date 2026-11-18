@@ -6,6 +6,9 @@ import sys
 from zipfile import ZipFile
 
 import pytest
+from sqlalchemy import create_engine
+
+from backend.app.db.session import Base
 
 from scripts.package_app_service import (
     APP_FILES,
@@ -132,7 +135,12 @@ with TestClient(server.app) as client:
         **os.environ,
         "PYTHONPATH": str(unpacked),
         "FRONTEND_DIR": str(unpacked / "frontend/dist"),
+        "DATABASE_URL": f"sqlite:///{tmp_path / 'synthetic-package.db'}",
+        "PREDICTIONS_BLOB_URL": "",
     }
+    engine = create_engine(environment["DATABASE_URL"])
+    Base.metadata.create_all(engine)
+    engine.dispose()
     result = subprocess.run(
         [sys.executable, "-c", check],
         cwd=unpacked,

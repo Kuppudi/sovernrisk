@@ -15,6 +15,7 @@ class Settings(BaseSettings):
     world_bank_base_url: str = "https://api.worldbank.org/v2"
     raw_data_dir: Path = Path("data/raw")
     report_data_dir: Path = Path("data/reports")
+    predictions_blob_url: str = ""
     azure_openai_endpoint: str = ""
     azure_openai_deployment: str = ""
     azure_openai_api_key: SecretStr = SecretStr("")

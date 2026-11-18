@@ -30,6 +30,18 @@ PostgreSQL, Docker, dashboard-tab and automatic-merge instructions.
   The notebook calls the shared offline training pipeline. It has no saved
   outputs. Install optional dependencies with `python -m pip install -e '.[ml]'`.
   See `ml/README.md` for Windows commands and required input files.
+- Current execution choice: run training on the Windows laptop, then show the
+  results in the existing Azure-hosted frontend. Use `ml.run_training` to
+  download inputs/train/export locally, and the explicit `ml.prediction_bundle
+  publish` command to upload JSON results to existing Blob Storage. Follow
+  `docs/LOCAL_TRAINING.md`. No Azure ML job is needed for this path.
+- App Service reads a private result bundle when `PREDICTIONS_BLOB_URL` is set,
+  using Azure Identity and a one-minute cache. Those model/map/country reads
+  bypass SQL catalogs. Other persisted-data/report paths still use PostgreSQL.
+  Do not confuse this narrow prediction adapter with the full storage migration.
+- Current exported results are held-out historical probabilities, marked
+  Historical research with outcome and feature years. They are not current
+  validated forecasts. Missing eligible-country results stay unavailable.
 - The current research target is **sovereign default onset** in outcome year Y:
   conventional debt in default becomes positive after an explicit zero stock
   in Y-1, using the 2026 BoC–BoE workbook. Ongoing defaults, unknown prior status
@@ -60,7 +72,8 @@ PostgreSQL, Docker, dashboard-tab and automatic-merge instructions.
   Blob datasets on Azure-managed compute. Export trusted reviewed artifacts to
   Blob, record model references and versioned country predictions in Cosmos DB,
   and let App Service load an appropriate artifact for lightweight inference.
-  Do not train during API requests. No production scorer or AML job is wired yet.
+  Do not train during API requests. An optional AML job definition exists, but
+  local training is the current execution choice. No production scorer is wired.
 - RAG is a later, separate evidence branch: official PDFs in Blob, page chunks
   and metadata in Cosmos DB, country-scoped retrieval, then Azure OpenAI using
   passages plus the actual model result/availability and dated structured data.

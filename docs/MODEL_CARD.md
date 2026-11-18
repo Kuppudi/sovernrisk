@@ -2,8 +2,10 @@
 
 An offline sovereign default-onset experiment is implemented in
 `ml/default_training.py` and `notebooks/default_training.ipynb`. It is
-retrospective research. Both production model endpoints remain unavailable;
-no research artifacts, probabilities or SHAP explanations are served.
+retrospective research. Production validation and live forecasting remain
+incomplete. The optional Blob results adapter can serve held-out historical probabilities, explicitly
+marked as research with their outcome/feature years. It serves JSON outputs,
+not serialized model artifacts. No SHAP explanations are implemented.
 
 Intended use: sovereign credit and loan-repayment risk analysis for development-finance lenders, other financial institutions, and insurers. This is the product focus, not a claim that a repayment/default model has already been trained. A repayment outcome, time horizon, and authorized repayment/default history must be defined before training that model. A rating downgrade is a different event and must not be presented as loan non-repayment.
 

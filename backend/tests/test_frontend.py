@@ -5,11 +5,12 @@ from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
 from backend.app.api.routes import router
+from backend.app.db.session import get_db
 from backend.app.frontend import add_frontend_routes
 
 
 @pytest.fixture
-def website(tmp_path):
+def website(tmp_path, db):
     (tmp_path / "index.html").write_text("<html>Synthetic frontend fixture</html>")
     (tmp_path / "favicon.svg").write_text('<svg xmlns="http://www.w3.org/2000/svg"/>')
     (tmp_path / "assets").mkdir()
@@ -19,6 +20,7 @@ def website(tmp_path):
         '{"type":"FeatureCollection","features":[]}'
     )
     app = FastAPI()
+    app.dependency_overrides[get_db] = lambda: db
     app.include_router(router)
     add_frontend_routes(app, tmp_path)
     with TestClient(app) as client:
@@ -70,8 +72,9 @@ def test_missing_files_and_api_routes_do_not_return_the_react_page(website, url)
     assert "Synthetic frontend fixture" not in response.text
 
 
-def test_backend_development_does_not_require_a_frontend_build(tmp_path):
+def test_backend_development_does_not_require_a_frontend_build(tmp_path, db):
     app = FastAPI()
+    app.dependency_overrides[get_db] = lambda: db
     app.include_router(router)
     add_frontend_routes(app, tmp_path / "not-built")
     with TestClient(app) as client:

@@ -4,8 +4,16 @@ from fastapi import HTTPException
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
+from backend.app.core.config import get_settings
 from backend.app.models import Country, ModelVersion, Prediction
 from backend.app.schemas.api import IndicatorOut, MapCountryOut, MapDataOut, ModelStatus, PredictionOut
+from backend.app.services.observations import require_country
+from backend.app.services.prediction_blobs import load_bundle
+
+
+def _blob_bundle():
+    url = get_settings().predictions_blob_url
+    return load_bundle(url) if url else None
 
 
 def _latest_model_version(db: Session) -> ModelVersion | None:
@@ -18,6 +26,14 @@ def _latest_model_version(db: Session) -> ModelVersion | None:
 
 
 def get_model_status(db: Session) -> ModelStatus:
+    bundle = _blob_bundle()
+    if bundle is not None:
+        return ModelStatus(
+            status="available", risk_model=f"default_onset:{bundle.model_version}",
+            predictions_available=len(bundle.predictions),
+            outcome_year=max(row.outcome_year for row in bundle.predictions),
+            reason=f"Historical research results. {bundle.limitation}",
+        )
     model = _latest_model_version(db)
     if model is None:
         return ModelStatus()
@@ -33,11 +49,24 @@ def get_model_status(db: Session) -> ModelStatus:
         risk_model=f"default_onset:{model.version}",
         downgrade_model="Model Not Trained",
         predictions_available=prediction_count,
-        reason="Validated default-onset predictions are available for configured countries.",
+        reason="Stored research predictions are available. These are not validated current forecasts.",
     )
 
 
 def get_country_prediction(db: Session, iso3: str) -> PredictionOut:
+    bundle = _blob_bundle()
+    if bundle is not None:
+        if not any(country.iso3 == iso3 for country in bundle.countries):
+            raise HTTPException(404, {"code": "COUNTRY_NOT_FOUND", "message": "Country not found."})
+        year = max(row.outcome_year for row in bundle.predictions)
+        for row in bundle.predictions:
+            if row.country_iso3 == iso3 and row.outcome_year == year:
+                return row
+        raise HTTPException(404, {
+            "code": "PREDICTION_NOT_FOUND",
+            "message": f"No eligible research prediction for this country in {year}.",
+        })
+    require_country(db, iso3)
     latest = _latest_model_version(db)
     if latest is None:
         raise HTTPException(
@@ -74,10 +103,34 @@ def get_country_prediction(db: Session, iso3: str) -> PredictionOut:
         model_version=latest.version,
         generated_at=row.generated_at,
         data_snapshot_id=row.data_snapshot_id,
+        outcome_year=row.as_of_date.year + 1,
+        feature_year=row.as_of_date.year - 1,
     )
 
 
 def get_default_risk_map(db: Session, requested_year: int) -> MapDataOut:
+    bundle = _blob_bundle()
+    if bundle is not None:
+        years = sorted({row.outcome_year for row in bundle.predictions}, reverse=True)
+        year = requested_year if requested_year in years else years[0]
+        values = {row.country_iso3: row for row in bundle.predictions if row.outcome_year == year}
+        return MapDataOut(
+            indicator=IndicatorOut(
+                code="default-risk", name="Debt default risk", category="risk",
+                unit="Probability", source_id=0,
+                definition="Historical research probability of sovereign default onset.",
+            ),
+            year=year, available_years=years, research_only=True,
+            countries=[MapCountryOut(
+                **country.model_dump(),
+                value=values[country.iso3].risk_score if country.iso3 in values else None,
+                observation_year=year if country.iso3 in values else None,
+                retrieved_at=bundle.generated_at if country.iso3 in values else None,
+                dataset_version=bundle.dataset_version if country.iso3 in values else None,
+            ) for country in bundle.countries],
+            source_name=f"Local research model ({bundle.model_version})",
+            source_url="",
+        )
     latest = _latest_model_version(db)
     if latest is None:
         raise HTTPException(
@@ -93,7 +146,7 @@ def get_default_risk_map(db: Session, requested_year: int) -> MapDataOut:
         .where(Prediction.model_version_id == latest.id)
         .distinct()
     ).all()
-    available_years = sorted({day.year for day in years}, reverse=True)
+    available_years = sorted({day.year + 1 for day in years}, reverse=True)
     if not available_years:
         raise HTTPException(
             404,
@@ -108,8 +161,8 @@ def get_default_risk_map(db: Session, requested_year: int) -> MapDataOut:
         select(Prediction)
         .where(
             Prediction.model_version_id == latest.id,
-            Prediction.as_of_date >= datetime(target_year, 1, 1).date(),
-            Prediction.as_of_date <= datetime(target_year, 12, 31).date(),
+            Prediction.as_of_date >= datetime(target_year - 1, 1, 1).date(),
+            Prediction.as_of_date <= datetime(target_year - 1, 12, 31).date(),
         )
     ).all()
     values = {row.country_iso3: row for row in rows}
@@ -146,4 +199,5 @@ def get_default_risk_map(db: Session, requested_year: int) -> MapDataOut:
         countries=map_countries,
         source_name=f"SovereignRisk model ({latest.version})",
         source_url="local-training-artifact",
+        research_only=True,
     )
