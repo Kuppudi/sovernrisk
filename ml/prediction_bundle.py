@@ -49,6 +49,11 @@ def export_bundle(snapshot_path: Path, output_dir: Path) -> Path:
         countries=[CountryOut.model_validate(row) for row in snapshot["manifest"]["countries"]],
         predictions=predictions,
     )
+    return write_bundle(bundle, output_dir)
+
+
+def write_bundle(bundle: PredictionBundle, output_dir: Path) -> Path:
+    output_dir.mkdir(parents=True, exist_ok=True)
     destination = output_dir / "frontend_predictions.json"
     # Close the temporary file before replacement so this also works on Windows.
     with tempfile.NamedTemporaryFile(mode="w", encoding="utf-8", dir=output_dir, delete=False) as stream:

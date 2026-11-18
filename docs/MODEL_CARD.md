@@ -1,5 +1,26 @@
 # Model card · production models unavailable
 
+## Latest-data conditional research estimates
+
+The default local runner now evaluates the chronological experiment first,
+then refits its selected learner on all eligible labeled history and scores
+the full country/economy catalog separately. The default download starts in
+1960. Inputs use the last complete year as reference with a two-year outcome
+lag, and may carry forward by at most two years under the same evaluation policy.
+
+For a 2026 run, reference year 2025 maps to outcome year 2027. Current default
+status is unverified; estimates assume no ongoing default at forecast origin.
+Inference outside labeled-country coverage is marked as extrapolation. At least
+four recent features are required. Missing-country data remains explicit, and
+some catalog entries are territories rather than sovereign issuers.
+
+The full-history fit has a separate artifact and metadata. Earlier test metrics
+describe the pre-refit experiment, not an independent evaluation of that fit.
+Calibration, vintage-aware validation and subgroup assessment remain incomplete.
+The green/yellow/red bands (<10%, 10–<50%, ≥50%) are presentation categories for
+model estimates; they are not validated credit-risk classifications or promises
+of safety/default. Schema-1 historical bundles remain supported.
+
 An offline sovereign default-onset experiment is implemented in
 `ml/default_training.py` and `notebooks/default_training.ipynb`. It is
 retrospective research. Production validation and live forecasting remain

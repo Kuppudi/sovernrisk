@@ -48,9 +48,22 @@ PostgreSQL, Docker, dashboard-tab and automatic-merge instructions.
   using Azure Identity and a one-minute cache. Those model/map/country reads
   bypass SQL catalogs. Other persisted-data/report paths still use PostgreSQL.
   Do not confuse this narrow prediction adapter with the full storage migration.
-- Current exported results are held-out historical probabilities, marked
-  Historical research with outcome and feature years. They are not current
-  validated forecasts. Missing eligible-country results stay unavailable.
+- The user selected latest-data research estimates for all countries. The
+  default `ml.run_training` now evaluates first, refits on all eligible historical
+  label rows, then scores the full catalog independently of label availability.
+  All countries appear; at least four recent features are needed for a numeric
+  score. Unknown current default status remains an explicit conditional assumption.
+- Downloaded history starts in 1960 by default. Use the last complete year as
+  feature reference, with the existing two-year lag to outcome year. Carry each
+  feature forward at most two years, identically in evaluation and inference;
+  record actual source years. No future backfill or silent all-median scores.
+- Latest result bundles use schema 2, distinguish insufficient data, and mark
+  countries outside labeled training coverage. Schema-1 historical results stay
+  compatible. Preserve the user's committed Windows bundle until they rerun and
+  push it; Mac verification outputs stay outside Git.
+- Risk colors use fixed green <10%, yellow 10–<50%, red ≥50% model-estimate
+  bands, with gray for insufficient data. Do not label these bands guaranteed
+  safety or certain default. GDP growth keeps a separate palette.
 - The current research target is **sovereign default onset** in outcome year Y:
   conventional debt in default becomes positive after an explicit zero stock
   in Y-1, using the 2026 BoC–BoE workbook. Ongoing defaults, unknown prior status
@@ -60,7 +73,7 @@ PostgreSQL, Docker, dashboard-tab and automatic-merge instructions.
   nine-feature schema is `ingestion.indicators.GLOBAL_INDICATORS`. Total GDP is
   a tenth display indicator outside that research schema. Retain nulls and
   require at least four observed research features per eligible row.
-- The starter uses Y-2 annual features for an end-of-Y-1 forecast of Y. This is
+- The research model uses Y-2 annual features for an end-of-Y-1 forecast of Y. This is
   an assumed publication lag. Revised WDI history does not establish what was
   known at the historical prediction date. Resolve that limitation before
   interpreting backtest probabilities as live lending forecasts.

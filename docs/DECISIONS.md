@@ -1,5 +1,22 @@
 # Architecture decisions
 
+## 2026-11-18 · Latest-data inference beyond the held-out label cohort
+
+The user requested all-country research estimates and selected latest data.
+Separate evaluation from full-history refitting and inference. Score the catalog
+using the selected learner even when a country has no historical labels, with
+explicit training-coverage metadata and conditional event semantics. Preserve
+the four-feature minimum and unavailable results for insufficient inputs.
+Use the same maximum two-year forward carry in evaluation and inference, retain
+actual source years, and never fill from future observations. Default extraction
+starts in 1960. Revised-history and calibration limitations remain explicit.
+
+Keep schema-1 historical results compatible and use schema 2 for full-catalog
+latest results. A 2026 as-of date targets 2027 using 2025 reference features.
+The existing Windows data file remains unchanged until the user regenerates it.
+Display green below 10%, yellow from 10% to below 50%, red at least 50%, and gray
+when unsupported. Labels describe model estimates, not guaranteed default/safety.
+
 ## 2026-11-18 · Commit the user's Windows prediction JSON
 
 The user cannot use GitHub Releases and explicitly requested putting the local

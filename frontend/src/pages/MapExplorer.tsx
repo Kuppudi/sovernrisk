@@ -24,6 +24,7 @@ export function MapExplorer({ country, onCountryChange }: {
   const selectedPlace = availablePlaces.find((place) => place.iso3 === country)
   const selectedGdp = mapData.data?.countries.find((item) => item.iso3 === country)
   const isRisk = mode === 'risk'
+  const riskMissingLabel = riskMap.data?.research_kind === 'latest_research' ? 'Insufficient data' : 'Unavailable'
   const displayedCountries = isRisk
     ? riskMap.data?.countries || availableCountries.map((place) => ({ iso3: place.iso3, value: null }))
     : mapData.data?.countries || []
@@ -45,7 +46,7 @@ export function MapExplorer({ country, onCountryChange }: {
             year={isRisk ? riskMap.data?.year : year}
             mapLabel={isRisk ? 'Debt default risk map' : 'GDP growth map'}
             emptyLabel={isRisk ? (riskMap.isPending ? 'Loading risk data…' : 'Default-risk scores unavailable') : mapData.isPending ? 'Loading GDP data…' : 'No reported values for this year'}
-            missingLabel={isRisk ? 'Unavailable' : 'No data'}
+            missingLabel={isRisk ? riskMissingLabel : 'No data'}
             selectedCountry={country || null}
             onSelectCountry={(place) => onCountryChange(place.iso3)}
           />

@@ -13,7 +13,7 @@ const dataUrl = source => `data:text/javascript;base64,${Buffer.from(source).toS
 const apiUrl = dataUrl(await moduleUrl('../src/services/api.ts'))
 const mapSource = (await moduleUrl('../src/services/mapData.ts'))
   .replace(/(['"])\.\/api\1/, JSON.stringify(apiUrl))
-const { loadMapData } = await import(dataUrl(mapSource))
+const { loadMapData, getMapColor, riskBands, missingDataColor } = await import(dataUrl(mapSource))
 const { formatIndicatorValue } = await import(dataUrl(await moduleUrl('../src/services/indicatorLabels.ts')))
 
 test('risk results use the prediction API while GDP uses World Bank', async () => {
@@ -33,4 +33,15 @@ test('risk results use the prediction API while GDP uses World Bank', async () =
   } finally {
     globalThis.fetch = originalFetch
   }
+})
+
+test('risk bands use fixed green/yellow/red boundaries independent of other countries', () => {
+  const range = { minimum: 0, maximum: 0.01 }
+  assert.equal(getMapColor(0, range, 'default-risk'), riskBands[0].color)
+  assert.equal(getMapColor(0.099, range, 'default-risk'), riskBands[0].color)
+  assert.equal(getMapColor(0.1, range, 'default-risk'), riskBands[1].color)
+  assert.equal(getMapColor(0.499, range, 'default-risk'), riskBands[1].color)
+  assert.equal(getMapColor(0.5, range, 'default-risk'), riskBands[2].color)
+  assert.equal(getMapColor(1, range, 'default-risk'), riskBands[2].color)
+  assert.equal(getMapColor(null, range, 'default-risk'), missingDataColor)
 })

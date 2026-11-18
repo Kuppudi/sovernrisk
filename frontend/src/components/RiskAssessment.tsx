@@ -17,8 +17,11 @@ export function RiskAssessment({ country, mode, onModeChange, gdpGrowth, gdpLoad
   const model = useModels()
   const prediction = usePrediction(country?.iso3 || '')
   const isRisk = mode === 'risk'
+  const latest = prediction.data?.research_kind === 'latest_research'
+  const inputYears = Object.values(prediction.data?.feature_years || {})
+  const inputRange = inputYears.length ? `${Math.min(...inputYears)}–${Math.max(...inputYears)}` : 'Unavailable'
   const riskValue = prediction.data?.risk_score == null
-    ? 'Unavailable'
+    ? prediction.data?.availability === 'insufficient_data' ? 'Insufficient data' : 'Unavailable'
     : `${(prediction.data.risk_score * 100).toFixed(1)}%`
   const value = isRisk
     ? model.isPending || prediction.isPending ? 'Loading…' : riskValue
@@ -34,18 +37,21 @@ export function RiskAssessment({ country, mode, onModeChange, gdpGrowth, gdpLoad
         <h2>{isRisk ? 'Debt default risk' : 'GDP growth'}</h2>
       </div>
       {isRisk && prediction.data?.research_only && (
-        <span className="risk-model-status">Historical research · {prediction.data.outcome_year}</span>
+        <span className="risk-model-status">{latest ? 'Research estimate' : 'Historical research'} · {prediction.data.outcome_year}</span>
       )}
       <p className="risk-score">{value}</p>
       <dl className="risk-summary">
         <div><dt>Country</dt><dd>{country?.name || '—'}</dd></div>
-        {isRisk && prediction.data && <div><dt>Outcome year</dt><dd>{prediction.data.outcome_year || '—'}</dd></div>}
+        {isRisk && prediction.data && <div><dt>{latest ? 'Forecast year' : 'Outcome year'}</dt><dd>{prediction.data.outcome_year || '—'}</dd></div>}
         {!isRisk && <div><dt>Year</dt><dd>{year}</dd></div>}
       </dl>
       {isRisk && (
         <details className="risk-model-details">
           <summary>Model details</summary>
           <p>{model.data?.reason || 'Validated default-risk scores are unavailable.'}</p>
+          {latest && <p>Recent inputs: {prediction.data?.observed_feature_count}/9. Feature reference year: {prediction.data?.feature_year}.</p>}
+          {latest && <p>Reported input years: {inputRange}. As of {prediction.data?.as_of_date}.</p>}
+          {latest && prediction.data?.in_training_coverage === false && <p>This country is outside the labeled training-country coverage.</p>}
         </details>
       )}
     </aside>

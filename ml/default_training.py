@@ -24,6 +24,7 @@ from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import RobustScaler
 
 from ingestion.indicators import GLOBAL_INDICATORS
+from ml.features import MAX_FEATURE_AGE, feature_panel
 
 FEATURES = list(GLOBAL_INDICATORS)
 MIN_FEATURES = 4
@@ -80,22 +81,9 @@ def read_default_labels(path: Path) -> pd.DataFrame:
 
 def build_panel(path: Path, labels: pd.DataFrame) -> tuple[pd.DataFrame, str]:
     snapshot = json.loads(path.read_text(encoding="utf-8"))
-    manifest = snapshot["manifest"]
-    observations = pd.DataFrame(manifest["observations"])
-    observations = observations.loc[observations["indicator_code"].isin(FEATURES)]
-    wide = observations.pivot(
-        index=["country_iso3", "observation_date"],
-        columns="indicator_code",
-        values="value",
-    ).reset_index()
-    missing = set(FEATURES) - set(wide.columns)
-    if missing:
-        raise ValueError(
-            f"Snapshot missing training indicators: {', '.join(sorted(missing))}"
-        )
-    wide["outcome_year"] = (
-        pd.to_datetime(wide["observation_date"]).dt.year + FEATURE_LAG
-    )
+    wide, _ = feature_panel(snapshot)
+    wide = wide.reset_index()
+    wide["outcome_year"] = wide["feature_year"] + FEATURE_LAG
     wide = wide.rename(columns={"country_iso3": "iso3"})
     rows = wide.merge(labels, on=["iso3", "outcome_year"], validate="one_to_one")
     rows = rows.loc[rows[FEATURES].notna().sum(axis=1) >= MIN_FEATURES]
@@ -196,6 +184,7 @@ def train(snapshot: Path, workbook: Path, train_through=2013, validate_through=2
         "cohort": "Issuers matched to WDI with numeric prior and outcome debt stocks, no prior default, and at least four economic features.",
         "features": FEATURES,
         "feature_lag_from_outcome_year": FEATURE_LAG,
+        "max_feature_age_years": MAX_FEATURE_AGE,
         "sklearn_version": sklearn.__version__,
         "splits": {
             name: {

@@ -64,6 +64,7 @@ export interface ModelStatus {
   reason: string
   research_only: boolean
   outcome_year: number | null
+  research_kind: 'historical_research' | 'latest_research'
 }
 
 export interface Prediction {
@@ -77,6 +78,11 @@ export interface Prediction {
   research_only: boolean
   outcome_year: number | null
   feature_year: number | null
+  research_kind: 'historical_research' | 'latest_research'
+  availability: 'available' | 'insufficient_data'
+  observed_feature_count: number | null
+  feature_years: Record<string, number>
+  in_training_coverage: boolean | null
 }
 export interface Report {
   country: Country
@@ -107,4 +113,5 @@ export interface MapData {
   source_name: string
   source_url: string
   research_only: boolean
+  research_kind: 'historical_research' | 'latest_research'
 }
