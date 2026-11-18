@@ -1,5 +1,19 @@
 # Project state · 2026-11-18
 
+## Latest fix · Include the Windows prediction file in the deployment
+
+The user's main push `d52c6ca` supplied valid Windows results under the singular
+filename `deploy/frontend_prediction.json`. Packaging expects
+`deploy/frontend_predictions.json`, so the successful release omitted the
+results. The live API reported zero available predictions and MODEL_NOT_TRAINED
+for the risk map, while health and the World Bank country catalog succeeded.
+
+Rename the file to the documented plural filename without changing its bytes.
+A packaging regression guard now rejects the singular spelling instead of
+silently releasing without scores. The corrected local ZIP includes all 395
+historical country-year predictions with metadata for 217 economies. Deployment
+of the corrected main commit remains a manual user action.
+
 ## Latest delivery choice · Reviewed Windows prediction JSON in Git
 
 GitHub Releases are not permitted in the user's environment. The user authorized
