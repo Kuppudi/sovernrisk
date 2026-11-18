@@ -32,9 +32,19 @@ PostgreSQL, Docker, dashboard-tab and automatic-merge instructions.
   See `ml/README.md` for Windows commands and required input files.
 - Current execution choice: run training on the Windows laptop, then show the
   results in the existing Azure-hosted frontend. Use `ml.run_training` to
-  download inputs/train/export locally, and the explicit `ml.prediction_bundle
-  publish` command to upload JSON results to existing Blob Storage. Follow
+  download inputs/train/export locally. Follow
   `docs/LOCAL_TRAINING.md`. No Azure ML job is needed for this path.
+- The user lacks Blob Contributor access. Current delivery uses a locally built
+  App Service ZIP with `--predictions-file` to include the existing result JSON.
+  The app discovers that bundled file automatically; no Blob access, new role
+  or extra setting is required. This needs the existing App Service release
+  permission. A source-only GitHub build cannot include ignored laptop files.
+  For the existing GitHub deployment channel, attach frontend_predictions.json
+  to a GitHub Release and select its tag in the manual workflow's
+  predictions_release_tag input. The workflow validates and packages that asset
+  using its existing deployment identity. Do not run deployment automatically.
+  Keep results out of Git, keep the research/year labels, and make release a
+  separate explicit action. Blob publishing is an optional later alternative.
 - App Service reads a private result bundle when `PREDICTIONS_BLOB_URL` is set,
   using Azure Identity and a one-minute cache. Those model/map/country reads
   bypass SQL catalogs. Other persisted-data/report paths still use PostgreSQL.
@@ -86,6 +96,10 @@ PostgreSQL, Docker, dashboard-tab and automatic-merge instructions.
   their actual names, endpoints, Cosmos API and identities using Azure CLI.
   Target Blob for PDFs/datasets/models and Cosmos for metadata/chunks/predictions.
   Read `docs/AZURE_HANDOFF.md` for the implementation plan.
+- Confirmed account mapping: `sovernriskai` is the data lake;
+  `sovernriskaiv1` is Blob storage. Use `sovernriskaiv1` for the hosted
+  prediction JSON and its container-scoped access roles. Verify Azure ML
+  datastore bindings independently before cloud training.
 - SQLAlchemy/PostgreSQL, local PDF archives and SQL-backed health/report paths
   still exist in the code. The Blob/Cosmos migration is planned, not implemented.
   Changing connection strings alone does not perform that migration. Preserve

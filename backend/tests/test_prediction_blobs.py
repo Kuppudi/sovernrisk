@@ -1,7 +1,6 @@
 """Synthetic result bundles only; no cloud calls or production model loading."""
 
 import json
-from datetime import UTC, datetime
 
 import pytest
 from azure.core.exceptions import ClientAuthenticationError
@@ -11,26 +10,6 @@ from pydantic import ValidationError
 from backend.app.core.config import get_settings
 from backend.app.schemas.prediction_bundle import PredictionBundle
 from backend.app.services import prediction_blobs
-
-
-@pytest.fixture
-def bundle_data():
-    return {
-        "schema_version": 1, "status": "historical_research",
-        "model_version": "synthetic-model", "dataset_version": "synthetic-snapshot",
-        "generated_at": datetime.now(UTC).isoformat(), "target": "default_onset",
-        "limitation": "Synthetic fixture; research only.",
-        "countries": [
-            {"iso3": code, "name": f"Synthetic {code}", "region": "Test", "income_group": "Test"}
-            for code in ("AAA", "BBB")
-        ],
-        "predictions": [{
-            "country_iso3": "AAA", "as_of_date": "2024-12-31", "risk_score": 0.125,
-            "downgrade_probability_12m": None, "model_version": "synthetic-model",
-            "generated_at": datetime.now(UTC).isoformat(), "data_snapshot_id": "synthetic-snapshot",
-            "research_only": True, "outcome_year": 2025, "feature_year": 2023,
-        }],
-    }
 
 
 def test_blob_mode_serves_status_map_and_country_without_sql(client, db, bundle_data, monkeypatch):
@@ -50,6 +29,32 @@ def test_blob_mode_serves_status_map_and_country_without_sql(client, db, bundle_
     mapped = client.get("/api/data/map?indicator=default-risk&year=2026").json()
     assert mapped["year"] == 2025 and mapped["research_only"] is True
     assert [country["value"] for country in mapped["countries"]] == [0.125, None]
+
+
+def test_packaged_results_take_priority_without_cloud_access(client, db, bundle_data, monkeypatch, tmp_path):
+    path = tmp_path / "frontend_predictions.json"
+    path.write_text(json.dumps(bundle_data))
+    monkeypatch.setattr("backend.app.services.predictions.PACKAGED_PREDICTIONS", path)
+    monkeypatch.setattr(get_settings(), "predictions_file", "")
+    monkeypatch.setattr(get_settings(), "predictions_blob_url", "https://blocked.blob.core.windows.net/a/b.json")
+    monkeypatch.setattr("backend.app.services.predictions.load_bundle", lambda *a: pytest.fail("Blob access attempted"))
+    monkeypatch.setattr(db, "scalar", lambda *a, **k: pytest.fail("SQL access attempted"))
+    monkeypatch.setattr(db, "scalars", lambda *a, **k: pytest.fail("SQL access attempted"))
+    assert client.get("/api/models/status").json()["status"] == "available"
+    assert client.get("/api/countries/AAA/prediction").json()["risk_score"] == 0.125
+    mapped = client.get("/api/data/map?indicator=default-risk&year=2025").json()
+    assert [row["value"] for row in mapped["countries"]] == [0.125, None]
+    # An invalid replacement must not silently use old cached results or Blob.
+    path.write_text('{"invalid":true}')
+    response = client.get("/api/models/status")
+    assert response.status_code == 503
+    assert response.json()["error"]["code"] == "PREDICTIONS_UNAVAILABLE"
+
+
+def test_explicit_missing_result_file_fails_without_blob_fallback(client, monkeypatch, tmp_path):
+    monkeypatch.setattr(get_settings(), "predictions_file", str(tmp_path / "missing.json"))
+    monkeypatch.setattr("backend.app.services.predictions.load_bundle", lambda *a: pytest.fail("Blob access attempted"))
+    assert client.get("/api/models/status").status_code == 503
 
 
 @pytest.mark.parametrize("change", ["probability", "duplicate", "country", "provenance", "year"])

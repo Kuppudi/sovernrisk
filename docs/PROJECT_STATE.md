@@ -1,4 +1,50 @@
-# Project state · 2026-11-17
+# Project state · 2026-11-18
+
+## Latest feature · Result delivery using App Service deployment access
+
+The user's Windows training succeeded, but Blob publishing failed and the user
+does not have Contributor access. The current alternative explicitly includes
+the existing validated JSON in a locally built deployment ZIP using
+`scripts.package_app_service --predictions-file`. App Service discovers the file
+at `backend/app/data/frontend_predictions.json` before attempting Blob access.
+An optional `PREDICTIONS_FILE` setting supports an explicit local file override.
+The result loader validates/caches file contents and reports missing/invalid
+configured results as unavailable.
+
+This uses existing App Service deployment permission without a Blob role or a
+storage upload. The user must deploy the locally built ZIP; a GitHub source-only
+build cannot include ignored results on the laptop. Training data, model binaries
+and result files remain outside Git. Ordinary packaging omits results unless
+the explicit flag is supplied. Research labels and outcome years remain visible.
+Other SQL paths and the broader Blob/Cosmos migration remain unchanged.
+
+The existing manual `main_sovernriskai.yml` workflow also accepts an optional
+`predictions_release_tag`. The user can attach the reviewed JSON as a GitHub
+Release asset and select its tag on dispatch. The workflow downloads it from
+the same repository, validates/packages it and uses the existing deployment
+identity. This path needs no Azure upload/deployment role on the laptop. It
+remains manual; no release asset is created and no deployment is run by this
+source work. Missing/invalid assets fail before the deploy job.
+
+Tests cover file-source precedence without cloud/SQL access, invalid/missing
+files, explicit validated packaging and the actual frontend/model/map/country
+APIs from an extracted release. Windows/Linux CI also checks optional packaging.
+This source work performs no Azure deployment or resource changes.
+
+Local verification passed 45 focused API/file/package checks and six ML checks.
+Fresh-process tests served country/model/map results from the extracted ZIP
+without Blob calls. A real research JSON containing 395 country-year predictions
+was packaged successfully, while model binaries remained excluded. Standard
+packaging also worked with site packages disabled, preserving the build-only
+workflow's standard-library dependency boundary. The new Release-asset workflow
+path remains unexecuted until the user supplies and selects a reviewed asset.
+
+Storage account correction from the user: `sovernriskai` is the data lake and
+`sovernriskaiv1` is Blob storage. Prediction uploads and `PREDICTIONS_BLOB_URL`
+must use `sovernriskaiv1`. The service inventory, Copilot instructions and local
+training runbook reflect this mapping. Azure ML datastore associations remain
+subject to separate verification. This documentation correction changes no
+Azure resources or application settings.
 
 ## Latest feature · Laptop training and hosted research results
 

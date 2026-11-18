@@ -2,6 +2,7 @@
 
 import asyncio
 import os
+from datetime import UTC, datetime
 from uuid import uuid4
 
 import httpx
@@ -144,3 +145,23 @@ def client(db):
     with TestClient(app) as client:
         yield client
     app.dependency_overrides.clear()
+
+
+@pytest.fixture
+def bundle_data():
+    return {
+        "schema_version": 1, "status": "historical_research",
+        "model_version": "synthetic-model", "dataset_version": "synthetic-snapshot",
+        "generated_at": datetime.now(UTC).isoformat(), "target": "default_onset",
+        "limitation": "Synthetic fixture; research only.",
+        "countries": [
+            {"iso3": code, "name": f"Synthetic {code}", "region": "Test", "income_group": "Test"}
+            for code in ("AAA", "BBB")
+        ],
+        "predictions": [{
+            "country_iso3": "AAA", "as_of_date": "2024-12-31", "risk_score": 0.125,
+            "downgrade_probability_12m": None, "model_version": "synthetic-model",
+            "generated_at": datetime.now(UTC).isoformat(), "data_snapshot_id": "synthetic-snapshot",
+            "research_only": True, "outcome_year": 2025, "feature_year": 2023,
+        }],
+    }

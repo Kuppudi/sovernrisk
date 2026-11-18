@@ -1,4 +1,5 @@
 from datetime import datetime
+from pathlib import Path
 
 from fastapi import HTTPException
 from sqlalchemy import func, select
@@ -9,10 +10,15 @@ from backend.app.models import Country, ModelVersion, Prediction
 from backend.app.schemas.api import IndicatorOut, MapCountryOut, MapDataOut, ModelStatus, PredictionOut
 from backend.app.services.observations import require_country
 from backend.app.services.prediction_blobs import load_bundle
+from backend.app.services.prediction_files import PACKAGED_PREDICTIONS, load_file_bundle
 
 
-def _blob_bundle():
-    url = get_settings().predictions_blob_url
+def _prediction_bundle():
+    settings = get_settings()
+    path = Path(settings.predictions_file) if settings.predictions_file else PACKAGED_PREDICTIONS
+    if settings.predictions_file or path.exists():
+        return load_file_bundle(path)
+    url = settings.predictions_blob_url
     return load_bundle(url) if url else None
 
 
@@ -26,7 +32,7 @@ def _latest_model_version(db: Session) -> ModelVersion | None:
 
 
 def get_model_status(db: Session) -> ModelStatus:
-    bundle = _blob_bundle()
+    bundle = _prediction_bundle()
     if bundle is not None:
         return ModelStatus(
             status="available", risk_model=f"default_onset:{bundle.model_version}",
@@ -54,7 +60,7 @@ def get_model_status(db: Session) -> ModelStatus:
 
 
 def get_country_prediction(db: Session, iso3: str) -> PredictionOut:
-    bundle = _blob_bundle()
+    bundle = _prediction_bundle()
     if bundle is not None:
         if not any(country.iso3 == iso3 for country in bundle.countries):
             raise HTTPException(404, {"code": "COUNTRY_NOT_FOUND", "message": "Country not found."})
@@ -109,7 +115,7 @@ def get_country_prediction(db: Session, iso3: str) -> PredictionOut:
 
 
 def get_default_risk_map(db: Session, requested_year: int) -> MapDataOut:
-    bundle = _blob_bundle()
+    bundle = _prediction_bundle()
     if bundle is not None:
         years = sorted({row.outcome_year for row in bundle.predictions}, reverse=True)
         year = requested_year if requested_year in years else years[0]

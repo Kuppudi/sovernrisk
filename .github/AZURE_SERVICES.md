@@ -20,8 +20,8 @@ as authorization to change resources or deploy code.
 | App Service | `sovernriskAI` | Hosts the React frontend and FastAPI API together on Linux. Running; public host is `sovernriskai-c8dbcqe6edapeuae.eastus2-01.azurewebsites.net`. |
 | App Service plan | `ASP-wbgpocrg-afce` | Compute plan for `sovernriskAI`. |
 | PostgreSQL Flexible Server | `sovernriskai-server` | Primary relational database currently used by the application. PostgreSQL 14, `Standard_D2s_v3`, Ready, private network access disabled from public access. |
-| Storage account / Blob | `sovernriskai` | Blob storage connected to Azure Machine Learning. Intended to hold Azure ML datasets, model artifacts, ML outputs and RAG development files. |
-| Storage account / ADLS Gen2 | `sovernriskaiv1` | Hierarchical namespace enabled data lake. Intended for versioned datasets, raw data, curated datasets and analytical data products. |
+| Storage account / ADLS Gen2 | `sovernriskai` | User-confirmed data lake for raw, versioned and curated datasets. |
+| Storage account / Blob | `sovernriskaiv1` | User-confirmed Blob storage for prediction result JSON, model artifacts, report files and other binary outputs. |
 | Cosmos DB for NoSQL | `wbgpoc-cosmosdb` | GlobalDocumentDB/Core SQL account. Reserved for application metadata and future RAG/model data. No Cosmos integration is currently confirmed in application code or App Service settings. |
 | Azure Machine Learning workspace | `sovernriskAI-diviml` | Workspace used for ML development and hosted ML compute. The workspace is in East US. |
 | Application Insights | `sovernriskAI` | Application telemetry and diagnostics connected to the App Service. |
@@ -71,7 +71,7 @@ configured network path.
 
 ## Storage responsibilities
 
-### `sovernriskaiv1` — ADLS Gen2 data lake
+### `sovernriskai` — ADLS Gen2 data lake
 
 Use this account for immutable, versioned and analytical datasets:
 
@@ -91,17 +91,22 @@ Recommended logical structure:
 
 This is the primary data lake for source datasets and feature development.
 
-### `sovernriskai` — Azure ML Blob storage
+### `sovernriskaiv1` — Blob storage
 
-Use this account as the Azure ML-linked Blob storage account:
+Use this account for application and model output files:
 
 - Azure ML managed datasets and data assets
 - Training inputs and test/validation inputs
 - Model artifacts and serialized experiment outputs
+- The hosted frontend's private `predictions/current.json` result bundle
 - Evaluation reports and metrics
 - Feature schemas and model dependency metadata
 - RAG development exports and generated content
 - Other model-related files that need to be accessible to ML compute
+
+The user corrected these account roles on November 17, 2026. Verify any Azure ML
+datastore binding separately before running a cloud job; account purpose alone
+does not establish which account `workspaceblobstore` references.
 
 The recommended RAG split is:
 
@@ -131,8 +136,8 @@ Workspace: `sovernriskAI-diviml`
 
 It is intended to run offline training and evaluation jobs using:
 
-- Versioned datasets from `sovernriskaiv1`
-- Azure ML-linked Blob data in `sovernriskai`
+- Versioned datasets from data lake `sovernriskai`
+- Model/result files in Blob account `sovernriskaiv1`, with datastore bindings verified separately
 - Managed compute rather than App Service request-time training
 - Reviewed artifacts exported back to versioned Blob paths
 
