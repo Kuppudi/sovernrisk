@@ -114,7 +114,7 @@ def main() -> None:
         parser.exit(1, f"{error}\n")
     print(f"App Service package: {args.output}")
     if args.predictions_file is not None or (PROJECT_ROOT / REPOSITORY_PREDICTIONS_PATH).is_file():
-        print("Included historical research results. Blob access is not required to serve them.")
+        print("Included research results. Blob access is not required to serve them.")
 
 
 if __name__ == "__main__":
