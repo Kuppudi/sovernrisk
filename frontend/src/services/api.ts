@@ -1,4 +1,6 @@
 export function isWorldBankIndicator(code = ''): boolean {
+  if (!code) return true
+  if (code === 'default-risk') return false
   return !code.startsWith('IMF.') && !code.startsWith('ADB.')
 }
 
