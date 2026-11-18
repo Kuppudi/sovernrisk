@@ -34,11 +34,13 @@ def _latest_model_version(db: Session) -> ModelVersion | None:
 def get_model_status(db: Session) -> ModelStatus:
     bundle = _prediction_bundle()
     if bundle is not None:
+        count = sum(row.risk_score is not None for row in bundle.predictions)
         return ModelStatus(
-            status="available", risk_model=f"default_onset:{bundle.model_version}",
-            predictions_available=len(bundle.predictions),
+            status="available" if count else "unavailable", risk_model=f"default_onset:{bundle.model_version}",
+            predictions_available=count,
             outcome_year=max(row.outcome_year for row in bundle.predictions),
-            reason=f"Historical research results. {bundle.limitation}",
+            research_kind=bundle.status,
+            reason=bundle.limitation,
         )
     model = _latest_model_version(db)
     if model is None:
@@ -124,9 +126,11 @@ def get_default_risk_map(db: Session, requested_year: int) -> MapDataOut:
             indicator=IndicatorOut(
                 code="default-risk", name="Debt default risk", category="risk",
                 unit="Probability", source_id=0,
-                definition="Historical research probability of sovereign default onset.",
+                definition=("Conditional research estimate of sovereign default onset."
+                            if bundle.status == "latest_research"
+                            else "Historical research probability of sovereign default onset."),
             ),
-            year=year, available_years=years, research_only=True,
+            year=year, available_years=years, research_only=True, research_kind=bundle.status,
             countries=[MapCountryOut(
                 **country.model_dump(),
                 value=values[country.iso3].risk_score if country.iso3 in values else None,

@@ -6,6 +6,8 @@ import {
   getMapColor,
   getValueRange,
   mapColors,
+  riskBands,
+  getRiskBand,
   type MapPlace,
   type WorldShapes,
 } from '../services/mapData'
@@ -75,7 +77,9 @@ export function WorldMap({
   const range = getValueRange(countries.map((country) => country.value))
 
   function valueLabel(value: number | null) {
-    return value === null ? missingLabel : formatIndicatorValue(value, indicator, unit)
+    if (value === null) return missingLabel
+    const formatted = formatIndicatorValue(value, indicator, unit)
+    return indicator === 'default-risk' ? `${formatted} · ${getRiskBand(value).label}` : formatted
   }
 
   useEffect(() => {
@@ -181,7 +185,7 @@ export function WorldMap({
               <path
                 key={`${country.iso3}-${index}`}
                 d={path}
-                fill={getMapColor(value, range)}
+                fill={getMapColor(value, range, indicator)}
                 className={isSelected ? 'map-country selected' : 'map-country'}
                 vectorEffect="non-scaling-stroke"
                 role="button"
@@ -209,12 +213,16 @@ export function WorldMap({
       <div className="map-legend" aria-label="Map color legend">
         {range ? (
           <>
-            <div className="legend-scale">
+            {indicator === 'default-risk' ? (
+              <div className="risk-legend" aria-label="Research estimate bands">
+                {riskBands.map((band) => <span key={band.label}><i style={{ background: band.color }} />{band.label} {band.range}</span>)}
+              </div>
+            ) : <div className="legend-scale">
               <div className="legend-colors">{mapColors.map((color) => <span key={color} style={{ background: color }} />)}</div>
               <div className="legend-values">
                 <span>{valueLabel(range.minimum)}</span><span>{valueLabel(range.maximum)}</span>
               </div>
-            </div>
+            </div>}
             <div className="legend-missing"><i />{missingLabel}</div>
           </>
         ) : <span>{emptyLabel}</span>}

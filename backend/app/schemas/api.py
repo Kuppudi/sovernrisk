@@ -116,6 +116,7 @@ class ModelStatus(BaseModel):
     reason: str = "Validated default-risk and downgrade predictions are not configured."
     research_only: bool = True
     outcome_year: int | None = None
+    research_kind: Literal["historical_research", "latest_research"] = "historical_research"
 
 
 class PredictionOut(BaseModel):
@@ -129,6 +130,11 @@ class PredictionOut(BaseModel):
     research_only: bool = True
     outcome_year: int | None = None
     feature_year: int | None = None
+    research_kind: Literal["historical_research", "latest_research"] = "historical_research"
+    availability: Literal["available", "insufficient_data"] = "available"
+    observed_feature_count: int | None = Field(default=None, ge=0, le=9)
+    feature_years: dict[str, int] = Field(default_factory=dict)
+    in_training_coverage: bool | None = None
 
 
 class Freshness(BaseModel):
@@ -175,3 +181,4 @@ class MapDataOut(BaseModel):
     source_name: str
     source_url: str
     research_only: bool = False
+    research_kind: Literal["historical_research", "latest_research"] = "historical_research"

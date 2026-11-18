@@ -72,3 +72,30 @@ evaluation → reviewed model artifacts in Blob → App Service inference, with
 prediction/model metadata in Cosmos DB. A later Azure OpenAI RAG branch will
 retrieve country PDF evidence and explain it alongside the model output with
 page citations. The public AI / RAG card stays Coming soon.
+
+## Latest-data estimates for the full catalog
+
+`python -m ml.run_training --download-inputs` downloads 1960 through the last
+complete year, evaluates the experiment, then refits the selected learner on
+all eligible labeled history and exports the latest-data bundle. A run in 2026
+uses reference year 2025 and target year 2027 under the two-year feature lag.
+`--as-of-date YYYY-MM-DD` makes the date explicit; `--historical-results` retains
+the held-out historical export. An existing older snapshot can be supplied with
+`--snapshot`, but it cannot add history or observations absent from that file.
+
+`ml/features.py` applies a maximum two-year last-observation carry-forward in
+both training and scoring. It never backfills future values. `ml/latest_estimates.py`
+fits after evaluation and scores countries without joining them to label rows.
+At least four recent features are needed; every catalog economy receives a row,
+with null for insufficient data and actual input years for available features.
+
+The model remains conditional on no ongoing default at forecast origin, which
+is not verified. Labeled training coverage is narrower than the catalog; unseen
+countries are marked. Calibration, historical-vintage validity and country-level
+validation remain incomplete. `metrics.json` describes the pre-refit historical
+experiment, not an independent test of `latest_research_model.joblib`.
+
+Only copy the new Windows `frontend_predictions.json` into `deploy/`, then
+commit/push and manually deploy. The repository's existing historical bundle
+is not replaced by verification runs on another computer. For alternative 2025
+sources and definition checks, see [data source accuracy](../docs/DATA_SOURCES_2025.md).

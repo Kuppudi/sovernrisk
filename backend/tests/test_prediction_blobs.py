@@ -1,6 +1,7 @@
 """Synthetic result bundles only; no cloud calls or production model loading."""
 
 import json
+from copy import deepcopy
 
 import pytest
 from azure.core.exceptions import ClientAuthenticationError
@@ -10,6 +11,7 @@ from pydantic import ValidationError
 from backend.app.core.config import get_settings
 from backend.app.schemas.prediction_bundle import PredictionBundle
 from backend.app.services import prediction_blobs
+from ingestion.indicators import GLOBAL_INDICATORS
 
 
 def test_blob_mode_serves_status_map_and_country_without_sql(client, db, bundle_data, monkeypatch):
@@ -55,6 +57,34 @@ def test_explicit_missing_result_file_fails_without_blob_fallback(client, monkey
     monkeypatch.setattr(get_settings(), "predictions_file", str(tmp_path / "missing.json"))
     monkeypatch.setattr("backend.app.services.predictions.load_bundle", lambda *a: pytest.fail("Blob access attempted"))
     assert client.get("/api/models/status").status_code == 503
+
+
+def test_latest_bundle_counts_only_supported_scores_and_serves_coverage(client, db, bundle_data, monkeypatch):
+    features = list(GLOBAL_INDICATORS)
+    bundle_data.update(schema_version=2, status="latest_research", feature_codes=features, max_feature_age_years=2)
+    row = bundle_data["predictions"][0]
+    row.update(research_kind="latest_research", as_of_date="2026-11-18", outcome_year=2027,
+               feature_year=2025, observed_feature_count=4, in_training_coverage=False,
+               feature_years={feature: 2025 for feature in features[:4]})
+    missing = deepcopy(row)
+    missing.update(country_iso3="BBB", risk_score=None, availability="insufficient_data",
+                   observed_feature_count=3, feature_years={feature: 2024 for feature in features[:3]})
+    bundle_data["predictions"].append(missing)
+    bundle = PredictionBundle.model_validate(bundle_data)
+    monkeypatch.setattr(get_settings(), "predictions_blob_url", "https://example.blob.core.windows.net/results/current.json")
+    monkeypatch.setattr("backend.app.services.predictions.load_bundle", lambda url: bundle)
+    monkeypatch.setattr(db, "scalar", lambda *a, **k: pytest.fail("Unexpected SQL query"))
+    status = client.get("/api/models/status").json()
+    assert status["predictions_available"] == 1 and status["outcome_year"] == 2027
+    assert status["research_kind"] == "latest_research"
+    result = client.get("/api/countries/BBB/prediction").json()
+    assert result["risk_score"] is None and result["availability"] == "insufficient_data"
+    mapped = client.get("/api/data/map?indicator=default-risk&year=2025").json()
+    assert mapped["year"] == 2027 and mapped["research_kind"] == "latest_research"
+    assert [row["value"] for row in mapped["countries"]] == [0.125, None]
+    missing["risk_score"] = 0.5
+    with pytest.raises(ValidationError, match="availability"):
+        PredictionBundle.model_validate(bundle_data)
 
 
 @pytest.mark.parametrize("change", ["probability", "duplicate", "country", "provenance", "year"])

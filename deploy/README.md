@@ -25,4 +25,6 @@ This tracked JSON is the user's explicit exception to the generated-output
 exclusion policy. Keep raw datasets, label downloads, metrics exports, model
 binaries, credentials and other local files excluded. The JSON follows repository
 visibility. Missing eligible-country results remain unavailable, and the UI keeps
-the historical research label and outcome year.
+the research-kind label and outcome year. Rerun `python -m ml.run_training`
+for schema-2 latest-data estimates before copying; this is separate from the
+legacy held-out historical export.

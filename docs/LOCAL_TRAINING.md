@@ -8,11 +8,24 @@ Blob publishing remains an optional alternative when the caller has access.
 Training needs neither Docker nor a database nor an Azure ML compute job.
 The app's other stored-data/report paths currently retain their SQL dependency.
 
-The current model produces **historical held-out research probabilities** for
-default onset, using nine economic/debt features and documented default labels.
-The default test window is 2019–2025. These results do not establish a current
-forecast. The UI keeps the research label and outcome year. Countries without
-eligible predictions remain unavailable. AI / RAG stays Coming soon.
+The default command now produces **latest-data conditional research estimates**
+for the full World Bank country/economy catalog. It first evaluates chronological
+historical partitions, then refits the selected learner on all eligible labeled
+years available in the snapshot and scores each catalog country separately.
+A country does not need a historical label to receive an estimate, but estimates
+outside labeled-country coverage are explicitly marked.
+
+The feature reference year is the last complete calendar year. With the existing
+two-year outcome lag, a run as of November 2026 uses a 2025 feature reference year
+and a 2027 forecast year. Inputs can carry forward by at most two years, using the
+same policy in evaluation and scoring. Each result records actual input years.
+At least four of nine recent features are required. All catalog economies appear
+in the JSON; those below that minimum have a null score and Insufficient data.
+
+These estimates assume no ongoing default at forecast origin. Current default
+status is unverified, revised historical vintages remain a limitation, and model
+calibration is incomplete. They are research estimates rather than validated
+lending forecasts. AI / RAG stays Coming soon.
 
 ## 1. Get the source and install on Windows
 
@@ -33,14 +46,16 @@ py -3.13 -m venv .venv
 .\.venv\Scripts\python.exe -m ml.run_training --download-inputs
 ```
 
-This downloads the global 1990–2025 WDI panel and official BoC–BoE workbook,
-then runs training, validation and historical testing on the laptop CPU. It
+This downloads global WDI data from 1960 through the last complete year and the
+official BoC–BoE workbook. Evaluation, full-history refitting and catalog scoring
+run on the laptop CPU. It
 does not submit a cloud job, write SQL or upload results. Allow time for provider
 downloads. The frontend's economic display window remains 2015–2025.
 
 Outputs under ignored `ml/artifacts/default-onset/` include `metrics.json`,
-`research_model.joblib`, `historical_test_predictions.csv` and
-`frontend_predictions.json`. Keep source datasets and generated outputs out of
+`research_model.joblib` and `historical_test_predictions.csv` for evaluation,
+plus `latest_research_model.joblib`, `latest_research_metadata.json` and
+`frontend_predictions.json` for latest estimates. Keep source datasets and generated outputs out of
 Git, with the single reviewed JSON copy under `deploy/` as the user-approved exception.
 
 For subsequent runs, reuse the downloaded files:
@@ -57,19 +72,25 @@ To reuse different existing files:
   --default-workbook "C:\vega-inputs\BoC-BoE-Database-2026.xlsx"
 ```
 
-To export an already completed run without retraining:
+For the historical held-out export only, rather than latest-data estimates:
 
 ```powershell
 .\.venv\Scripts\python.exe -m ml.prediction_bundle export `
-  --snapshot "data/raw/global-wdi-1990-2025.json" `
+  --snapshot "data/raw/global-wdi-1960-2025.json" `
   --output "ml/artifacts/default-onset"
 ```
 
-The export verifies the snapshot version, feature schema, held-out year range,
-probability bounds, country coverage and unique country/year rows. It includes
-all snapshot countries, with scores only for eligible test rows. The current
-card uses the latest outcome year in the bundle; missing countries do not fall
-back to older years.
+Latest bundles use schema 2 and contain one row per catalog country, with score
+availability, feature years/count and labeled-country coverage. Historical
+schema-1 bundles remain readable. The latest full-history artifact is separate
+from the pre-refit artifact and test metrics. The old test metrics must not be
+reported as evaluating the full-history fit.
+
+The risk palette uses fixed presentation bands: green below 10%, yellow from
+10% to below 50%, red at 50% or above. Labels say lower/elevated/higher model
+estimate. These are display bands, not validated credit categories or claims
+that a red country will default. GDP growth retains its independent blue scale.
+See [2025 data and source accuracy](DATA_SOURCES_2025.md) before adding substitutes.
 
 ## 3. Deploy results without Blob access
 
@@ -254,9 +275,9 @@ Invoke-RestMethod "$appUrl/api/countries/IND/prediction"
 ```
 
 An eligible country returns a probability between 0 and 1 plus model/snapshot,
-outcome year and feature year. The UI displays the probability as a percentage
-and marks it Historical research. Missing eligible coverage returns 404 and
-appears Unavailable. A Blob permissions/configuration/validation failure returns
+outcome year and feature year. The UI displays the model estimate as a percentage with its research kind
+and outcome year. Latest catalog rows with insufficient inputs return a null score and show
+Insufficient data. Legacy historical bundles return 404 for an absent test row. A Blob permissions/configuration/validation failure returns
 503. GDP growth continues through the World Bank API. The existing `/health`
 check still covers SQL, since the rest of that storage migration remains pending.
 

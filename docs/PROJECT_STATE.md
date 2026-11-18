@@ -1,5 +1,32 @@
 # Project state · 2026-11-18
 
+## Latest feature · Full-catalog research inference and risk colors
+
+The user selected latest-data research estimates, broader country coverage and
+green/yellow/red risk colors. `ml.run_training` now evaluates the historical
+experiment, refits the selected learner on all eligible labeled history, and
+scores the full World Bank catalog without requiring a label row for each
+country being scored. Default downloads start in 1960. The same bounded two-year
+carry-forward policy is applied in evaluation and inference, without future
+backfill. Current annual reference year 2025 maps to outcome year 2027 under
+the existing lag. Current default status remains an unverified condition.
+
+Schema-2 latest bundles include one row per economy, input years/counts,
+labeled-country coverage, and explicit nulls for insufficient data. Legacy
+historical bundles remain supported. Test metrics and pre-refit artifacts remain
+separate from the full-history refit artifact. The UI distinguishes latest
+research from historical test results and uses fixed green/yellow/red estimate
+bands, with gray for missing data. AI / RAG remains Coming soon.
+
+Existing-data verification covered 194 of 217 economies, with 23 below the
+four-feature minimum. A full-history verification fit used 2,638 eligible rows
+through outcome year 2025 and 134 labeled issuers. The committed Windows result
+JSON is preserved; verification outputs from the Mac are not substituted into
+Git. The user must rerun training on Windows, copy the new JSON to the tracked
+deployment path, commit/push and manually deploy. No Azure changes are made by
+this implementation. See `DATA_SOURCES_2025.md` for researched alternatives and
+why no silent IMF-to-WDI substitution is performed.
+
 ## Latest fix · Include the Windows prediction file in the deployment
 
 The user's main push `d52c6ca` supplied valid Windows results under the singular

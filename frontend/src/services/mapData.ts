@@ -16,6 +16,15 @@ interface ValueRange {
 
 export const mapColors = ['#d2e5f5', '#a5cce8', '#73add6', '#428ac0', '#1b5e97']
 export const missingDataColor = '#e4e9ed'
+export const riskBands = [
+  { color: '#16a34a', label: 'Lower estimate', range: '<10%' },
+  { color: '#eab308', label: 'Elevated estimate', range: '10–<50%' },
+  { color: '#dc2626', label: 'Higher estimate', range: '≥50%' },
+]
+
+export function getRiskBand(value: number) {
+  return riskBands[value < 0.1 ? 0 : value < 0.5 ? 1 : 2]
+}
 
 export async function loadWorldShapes(): Promise<WorldShapes> {
   const response = await fetch('/maps/world-countries.json')
@@ -75,7 +84,9 @@ export function getValueRange(values: Array<number | null>): ValueRange | null {
 export function getMapColor(
   value: number | null,
   range: ValueRange | null,
+  indicator = '',
 ): string {
+  if (indicator === 'default-risk') return value === null ? missingDataColor : getRiskBand(value).color
   if (value === null || range === null) return missingDataColor
   if (range.minimum === range.maximum) return mapColors[2]
 
