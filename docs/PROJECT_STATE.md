@@ -1,5 +1,12 @@
 # Project state · 2026-11-17
 
+Storage account correction from the user: `sovernriskai` is the data lake and
+`sovernriskaiv1` is Blob storage. Prediction uploads and `PREDICTIONS_BLOB_URL`
+must use `sovernriskaiv1`. The service inventory, Copilot instructions and local
+training runbook reflect this mapping. Azure ML datastore associations remain
+subject to separate verification. This documentation correction changes no
+Azure resources or application settings.
+
 ## Latest feature · Laptop training and hosted research results
 
 Pulled `45814f7`, which fixes default-risk routing to `/api/data/map` instead

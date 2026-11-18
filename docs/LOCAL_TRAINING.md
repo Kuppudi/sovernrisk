@@ -68,13 +68,15 @@ back to older years.
 
 ## 3. Inspect existing storage and access
 
-The inventory records storage account `sovernriskai` and App Service
-`sovernriskAI` in `wbg-poc-rg`. Verify these values and select an existing private
-container for the prediction JSON. These discovery commands are read-only:
+The user confirmed `sovernriskai` is the data lake and `sovernriskaiv1` is Blob
+storage. Use Blob account `sovernriskaiv1` for the prediction JSON and App Service
+`sovernriskAI` in `wbg-poc-rg`. Select an existing private container, or create
+one such as `vega-models` during manual setup. Verify the resource group for the
+storage account. These discovery commands are read-only:
 
 ```powershell
 az account show --output table
-az storage container list --account-name sovernriskai --auth-mode login --output table
+az storage container list --account-name sovernriskaiv1 --auth-mode login --output table
 az webapp identity show --resource-group wbg-poc-rg --name sovernriskAI
 ```
 
@@ -90,7 +92,7 @@ the container placeholder first; no resources are created by the training code.
 
 ```powershell
 $predictionContainer = "<existing-private-container>"
-$storageId = az storage account show --resource-group wbg-poc-rg --name sovernriskai --query id --output tsv
+$storageId = az storage account list --query "[?name=='sovernriskaiv1'].id | [0]" --output tsv
 $containerScope = "$storageId/blobServices/default/containers/$predictionContainer"
 $developerId = az ad signed-in-user show --query id --output tsv
 $appIdentity = az webapp identity show --resource-group wbg-poc-rg --name sovernriskAI --query principalId --output tsv
@@ -110,7 +112,7 @@ metrics and selecting the container. It uploads an archived version followed by
 the current JSON bundle. Model binaries are not uploaded by this command.
 
 ```powershell
-$predictionBlobUrl = "https://sovernriskai.blob.core.windows.net/$predictionContainer/predictions/current.json"
+$predictionBlobUrl = "https://sovernriskaiv1.blob.core.windows.net/$predictionContainer/predictions/current.json"
 .\.venv\Scripts\python.exe -m ml.prediction_bundle publish `
   --file "ml/artifacts/default-onset/frontend_predictions.json" `
   --blob-url $predictionBlobUrl

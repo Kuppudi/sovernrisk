@@ -86,6 +86,10 @@ PostgreSQL, Docker, dashboard-tab and automatic-merge instructions.
   their actual names, endpoints, Cosmos API and identities using Azure CLI.
   Target Blob for PDFs/datasets/models and Cosmos for metadata/chunks/predictions.
   Read `docs/AZURE_HANDOFF.md` for the implementation plan.
+- Confirmed account mapping: `sovernriskai` is the data lake;
+  `sovernriskaiv1` is Blob storage. Use `sovernriskaiv1` for the hosted
+  prediction JSON and its container-scoped access roles. Verify Azure ML
+  datastore bindings independently before cloud training.
 - SQLAlchemy/PostgreSQL, local PDF archives and SQL-backed health/report paths
   still exist in the code. The Blob/Cosmos migration is planned, not implemented.
   Changing connection strings alone does not perform that migration. Preserve
