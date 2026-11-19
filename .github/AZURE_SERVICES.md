@@ -23,12 +23,18 @@ as authorization to change resources or deploy code.
 | Storage account / ADLS Gen2 | `sovernriskai` | User-confirmed data lake for raw, versioned and curated datasets. |
 | Storage account / Blob | `sovernriskaiv1` | User-confirmed Blob storage for prediction result JSON, model artifacts, report files and other binary outputs. |
 | Cosmos DB for NoSQL | `wbgpoc-cosmosdb` | GlobalDocumentDB/Core SQL account. Reserved for application metadata and future RAG/model data. No Cosmos integration is currently confirmed in application code or App Service settings. |
-| Azure Machine Learning workspace | `sovernriskAI-diviml` | Workspace used for ML development and hosted ML compute. The workspace is in East US. |
+| Azure Machine Learning workspace | `sovernriskAI-diviml` | Primary Divi ML workspace used for ML development and hosted ML compute. The workspace is in East US. |
 | Application Insights | `sovernriskAI` | Application telemetry and diagnostics connected to the App Service. |
-| Azure Key Vault | `wbgpoc-kv` and other vault resources | Secret and key storage. App credentials must remain out of source and logs. |
+| Azure Key Vault | `wbgpocrgsovdiv6922738757` | User-confirmed SovDiv Key Vault for this app context. Keep secrets out of source and logs. |
 | Azure Data Factory | `wbgpoc-df` | Supporting data orchestration resource. It is not confirmed to be part of the current application runtime. |
 | GitHub OIDC identity | `sovernrisk-gh-oidc` | User-assigned identity used for GitHub-to-Azure deployment identity. |
 | Virtual network / private endpoints | `wbgpoc-vnet`, `vnet-cfouxtit` and private endpoint resources | Private networking infrastructure for Azure data and platform services. |
+
+Storage boundary clarification:
+
+- `sovernriskai` is the Gen2 data lake for this project.
+- `sovernriskaiv1` is the Blob storage account for this project.
+- `wbgpocdatalake` is not a project storage account for SovereignRisk AI.
 
 ## Flexible Server: how the app uses it now
 
@@ -132,7 +138,9 @@ partition keys and data-plane role assignments.
 
 ## Azure Machine Learning
 
-Workspace: `sovernriskAI-diviml`
+Primary workspace: `sovernriskAI-diviml` (Divi ML)
+
+Also present in the resource group: `wbgpoc-azml`.
 
 It is intended to run offline training and evaluation jobs using:
 
@@ -147,9 +155,12 @@ experiment until validation and serving approval are completed.
 
 ## Azure OpenAI
 
-No Azure OpenAI or Cognitive Services resource was found in the Azure resource
-inventory. RAG generation remains planned. App Service setting names do not
-currently include Azure OpenAI endpoint, deployment or key settings.
+A Cognitive Services/Foundry account (`wbgpoc-foundry`) exists in the resource
+group, but the user confirmed it was not created by the Divi/985109 account and
+is not treated as an active app dependency for this project.
+
+RAG generation remains planned. App Service setting names currently do not
+include Azure OpenAI endpoint/deployment settings for this app.
 
 ## App Service deployment and configuration
 
