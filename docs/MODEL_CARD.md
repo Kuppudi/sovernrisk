@@ -1,5 +1,21 @@
 # Model card · production models unavailable
 
+## Local scenario research integration · 2026-11-24
+
+An optional local engine can score fixed growth/inflation/debt-service input
+perturbations with a supplied latest-research artifact and matching frozen input
+snapshot. Baseline reproduction, artifact hash, feature schema, source years,
+dependency version and prediction-bundle provenance are checked. Real-country
+verification awaits the user's Windows artifacts. Synthetic tests do not validate
+country risk estimates or the economic plausibility of preset magnitudes.
+
+This is conditional model sensitivity, not causal policy simulation. Other features
+stay fixed; economic feedback is not modeled. Unchanged/decreasing outputs are
+retained, no uncertainty intervals are claimed, and the no-ongoing-default
+assumption remains unverified. Preset magnitudes are provisional demo assumptions.
+No production scoring approval, hosted model artifact or new calibration is
+established. See `use-cases/use-case-1-phase-1.md`.
+
 ## Latest-data conditional research estimates
 
 The default local runner now evaluates the chronological experiment first,

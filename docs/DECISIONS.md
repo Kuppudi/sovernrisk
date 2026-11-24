@@ -1,5 +1,28 @@
 # Architecture decisions
 
+## 2026-11-24 · Local Use Case 1 before Azure integration
+
+Build one-country conditional scenario inference locally, with India and two
+World Bank-researched demo examples (Kenya and Pakistan recommended). The user
+will provide the matching Windows model/snapshot later. Do not replace their
+committed bundle or train a substitute model. Keep model/snapshot paths and the
+reviewed model hash in operator configuration, never HTTP request bodies.
+
+Use the same frozen model and hashed snapshot for baseline and stress. Require
+baseline reproduction and matching source years; preserve the two-year outcome
+lag and bounded carry-forward policy. Fixed presets directly modify growth,
+inflation and debt-service/exports, with provisional magnitudes awaiting agreement.
+Preserve flat/decreasing model responses and disclose held-fixed inputs, unverified
+default status, calibration limits and missing uncertainty intervals. No causal
+claims or automatic shock transmission mappings are introduced.
+
+Lazy-load optional ML dependencies. Local scenario endpoints are independent of
+SQL/cloud; the hosted release still excludes ML artifacts/runtime. Cache only
+validated immutable inputs and require process restart after file replacement.
+Azure storage, UI/export and cited narrative are subsequent work. The user is
+considering deterministic text versus Foundry after requesting an explanation of
+those options. No cloud writes, deployment or resource changes are part of this work.
+
 ## 2026-11-18 · Latest-data inference beyond the held-out label cohort
 
 The user requested all-country research estimates and selected latest data.

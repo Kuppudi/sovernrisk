@@ -17,6 +17,10 @@ class Settings(BaseSettings):
     report_data_dir: Path = Path("data/reports")
     predictions_blob_url: str = ""
     predictions_file: str = ""
+    scenario_model_file: str = ""
+    scenario_model_sha256: str = ""
+    scenario_snapshot_file: str = ""
+    scenario_bundle_file: str = ""
     azure_openai_endpoint: str = ""
     azure_openai_deployment: str = ""
     azure_openai_api_key: SecretStr = SecretStr("")

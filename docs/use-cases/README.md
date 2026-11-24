@@ -17,6 +17,7 @@ Each use case document includes:
 ## Use case documents
 
 1. [Use case 1: Sovereign early-warning and policy shock simulator](./use-case-1.md)
+   - [Phase 1 local implementation and country research](./use-case-1-phase-1.md)
 2. [Use case 2: Debt vulnerability triage system](./use-case-2.md)
 3. [Use case 3: Evidence-grounded risk briefing generator](./use-case-3.md)
 4. [Use case 4: Cross-country contagion and spillover monitor](./use-case-4.md)

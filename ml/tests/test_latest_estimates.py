@@ -1,6 +1,7 @@
 """Synthetic data checks for inference outside the labeled training cohort."""
 
 import json
+import hashlib
 from datetime import date
 
 import pandas as pd
@@ -10,6 +11,8 @@ from backend.app.schemas.prediction_bundle import PredictionBundle
 from ml.default_training import FEATURES, train
 from ml.features import feature_panel
 from ml.latest_estimates import latest_estimates
+from ml.scenarios import LocalScenarioEngine, content_hash
+from backend.app.schemas.scenarios import ScenarioRequest
 from ml.tests.test_default_training import write_workbook
 
 
@@ -44,12 +47,13 @@ def test_latest_scoring_covers_unlabeled_countries_and_marks_missing_data(tmp_pa
                     value = None
                 records.append({"country_iso3": code, "observation_date": f"{year}-01-01", "indicator_code": feature, "value": value})
     snapshot = tmp_path / "synthetic-snapshot.json"
-    snapshot.write_text(json.dumps({
-        "dataset_version": "synthetic-version",
+    snapshot_data = {
         "manifest": {"observations": records, "countries": [
             {"iso3": code, "name": f"Synthetic {code}", "region": "Test", "income_group": "Test"} for code in codes
         ]},
-    }))
+    }
+    snapshot_data["dataset_version"] = content_hash(snapshot_data["manifest"])
+    snapshot.write_text(json.dumps(snapshot_data))
     workbook = tmp_path / "synthetic-labels.xlsx"
     write_workbook(workbook, labels)
     report, template, _ = train(snapshot, workbook)
@@ -68,5 +72,10 @@ def test_latest_scoring_covers_unlabeled_countries_and_marks_missing_data(tmp_pa
     metadata = json.loads((tmp_path / "output/latest_research_metadata.json").read_text())
     assert metadata["fit_through_outcome_year"] == 2025
     assert metadata["fit_rows"] > report["splits"]["train"]["rows"]
+    model_path = tmp_path / "output" / "latest_research_model.joblib"
+    engine = LocalScenarioEngine(model_path, hashlib.sha256(model_path.read_bytes()).hexdigest(), snapshot, path)
+    scenario = engine.run(ScenarioRequest(country_iso3="AAA", presets=["growth_slowdown"]))
+    assert scenario.baseline_probability == pytest.approx(rows["AAA"].risk_score)
+    assert scenario.model_version == bundle.model_version
     with pytest.raises(ValueError, match="follow"):
         latest_estimates(snapshot, workbook, report, template, tmp_path / "output", date(2025, 1, 1))

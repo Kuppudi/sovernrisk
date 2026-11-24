@@ -1,4 +1,30 @@
-# Project state · 2026-11-18
+# Project state · 2026-11-24
+
+## Latest work · Use Case 1 local scenario integration
+
+The user selected Use Case 1, India plus two researched demo countries, integration
+before supplying Windows artifacts, and a local engine before Azure adapters.
+Kenya and Pakistan are recommended based on November/October 2026 World Bank
+updates. The committed bundle reports nine features for all three; this is not
+independent verification of their model inputs or default status.
+
+`POST /api/scenarios` and `GET /api/scenarios/presets` now provide an optional
+local integration. The engine loads a trusted hash-pinned latest-research model,
+matching hashed snapshot and schema-2 prediction bundle. It preserves feature
+timing/missingness and requires baseline reproduction before returning stress
+probabilities, percentage-point deltas, source years and reproducibility hashes.
+No files, model, Azure access or SQL are needed to list presets. Unconfigured
+inference returns 503. ML extras load only when configured.
+
+The provisional presets are growth −2pp, inflation +3pp and debt-service/exports
++5pp. These are demo assumptions awaiting agreement, not country-calibrated
+stress limits or causal effects. No uncertainty bands, UI controls, persistent
+history, exports or RAG block are implemented. The user requested explanation
+of preset and narrative choices; Foundry versus deterministic generation remains
+undecided. Real-country numerical verification awaits matching Windows artifacts.
+See `docs/use-cases/use-case-1-phase-1.md` for sources, local setup and acceptance.
+App Service packaging, existing prediction JSON and manual deployment controls
+remain in place; no model binaries or ML runtime are added to the release.
 
 ## Latest feature · Full-catalog research inference and risk colors
 

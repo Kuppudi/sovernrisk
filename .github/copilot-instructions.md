@@ -26,6 +26,16 @@ PostgreSQL, Docker, dashboard-tab and automatic-merge instructions.
 
 ## ML beginnings and intended outcome
 
+- Use Case 1 now has an optional local scenario API and engine; see
+  `docs/use-cases/use-case-1-phase-1.md`. The user will supply matching Windows
+  artifacts later and chose local verification before Azure adapters. India,
+  Kenya and Pakistan are demo examples, not an asserted risk ranking. Require a
+  trusted hash-pinned latest model, matching frozen snapshot/bundle and baseline
+  reproduction. Growth/inflation/debt-service presets are provisional. Preserve
+  flat/decreasing responses and frame results as conditional sensitivity. UI,
+  Azure persistence and page-cited narrative are subsequent work; Foundry is
+  undecided. Keep ML loading optional and outside ordinary hosted packaging.
+
 - Start with `notebooks/default_training.ipynb` and `ml/default_training.py`.
   The notebook calls the shared offline training pipeline. It has no saved
   outputs. Install optional dependencies with `python -m pip install -e '.[ml]'`.

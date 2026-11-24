@@ -12,6 +12,7 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 from backend.app.api.routes import router
 from backend.app.api.debt_reports import router as debt_report_router
 from backend.app.api.live_world_bank import router as live_world_bank_router
+from backend.app.api.scenarios import router as scenario_router
 from backend.app.core.config import get_settings
 from backend.app.core.logging import configure_logging
 from backend.app.frontend import add_frontend_routes
@@ -109,4 +110,5 @@ async def request_log(request: Request, call_next):
 app.include_router(router)
 app.include_router(debt_report_router)
 app.include_router(live_world_bank_router)
+app.include_router(scenario_router)
 add_frontend_routes(app, get_settings().frontend_dir)
