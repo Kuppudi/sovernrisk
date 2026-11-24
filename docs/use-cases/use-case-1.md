@@ -1,9 +1,11 @@
 # Use Case 1: Sovereign Early-Warning and Policy Shock Simulator
 
 ## 1) Summary
-This use case helps policy and risk teams test "what happens next" before debt stress becomes a crisis. A user picks a country, sets a baseline year, applies one or more stress shocks, and gets a clear view of how sovereign default-onset risk may move. The goal is not to claim a guaranteed forecast. The goal is to give a practical early-warning tool that supports faster and better policy decisions.
+This use case turns your current dashboard into an early-warning decision tool. Instead of only showing the latest country metrics, it lets a user ask: "If inflation rises, growth slows, or financing conditions worsen, how does sovereign default-onset risk change?" The user selects a country, applies one or more predefined stress shocks, and gets a baseline-versus-stressed comparison.
 
-In simple terms: it turns static country indicators into an interactive stress-testing workflow with transparent assumptions, caveats, and reproducible outputs.
+Why this matters: debt stress usually builds over time, but policy teams often react late because they only see static snapshots. This workflow helps teams test plausible downside scenarios earlier, document assumptions, and communicate risk changes with evidence. The output is designed for practical use in memos and review meetings, not as a black-box prediction.
+
+In simple terms: we combine your existing country data, current ML workflow, and citation-backed context to show how risk might move under realistic stress scenarios.
 
 Debt relevance: Very high. This use case directly supports sovereign debt vulnerability monitoring and policy stress testing.
 
@@ -43,7 +45,6 @@ Decision makers do not have a consistent and evidence-grounded way to answer: "I
 6. System logs scenario inputs/outputs for reproducibility and governance.
 
 ## 7) How users will use this application
-No portfolio upload is required for this use case.
 
 1. Open the existing map/dashboard and select a country.
 2. Switch to a new "Scenario" panel for that country.
@@ -58,6 +59,15 @@ No portfolio upload is required for this use case.
 - Explainability service (top changed drivers and caveats)
 - Scenario history service (compare prior runs over time)
 - Export/report service (policy note-ready output)
+
+Platform services used in this use case:
+- Existing Azure App Service: host the scenario API and current React frontend.
+- World Bank live data API path: provide current structured country indicators.
+- Azure Blob Storage (`sovernriskaiv1`): store versioned scenario outputs and optional graph artifacts.
+- Azure Cosmos DB (`wbgpoc-cosmosdb`, planned adapter): keep scenario run metadata and lightweight lineage records.
+- Azure OpenAI / Foundry (planned for RAG): generate short evidence-grounded context from retrieved report chunks.
+- Application Insights: track API errors/latency and scenario-run observability.
+- Azure Key Vault: hold service configuration/secrets used by backend services.
 
 ## 9) How agentic flow will be used
 - Agent for scenario setup: converts user intent into structured scenario configs and validates constraints.
@@ -107,6 +117,21 @@ RAG context inputs:
 - Country ISO3 and selected scenario.
 - Latest quantitative signals from the structured data layer.
 - Country-scoped report chunks with page citations.
+
+Simple knowledge graph / GraphML option (2-week feasible):
+- Scope: keep one lightweight in-memory graph per scenario run.
+- Node types: `country`, `scenario`, `indicator`, `risk_output`, `evidence_chunk`.
+- Edge types: `applies_to`, `affects`, `supports`, `produces`.
+- Purpose: make the reasoning chain visible from scenario input to risk output and evidence.
+- Storage: save graph as JSON plus optional GraphML export for inspection.
+- UI: do not build a new graph UI; show a simple "reasoning chain" table in existing React views.
+
+Minimal implementation steps:
+1. Build graph object during scenario execution (NetworkX or plain dict).
+2. Attach top-3 changed indicators and top-2 cited evidence chunks.
+3. Persist graph artifact with scenario metadata.
+4. Add an API endpoint to return graph JSON and optional GraphML file.
+5. Show reasoning-chain rows in the scenario result panel.
 
 ## 13) Intended libraries and technical stack
 Python backend and modeling:
